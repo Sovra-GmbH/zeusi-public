@@ -1,0 +1,2 @@
+# b52fde9:scripts/test-hermetic.ts line 17: the HOME of every test from raw mkdtemp (#16 review note; #44 review P3-5 intermittent import-cli failure)
+const home = mkdtempSync(join(tmpdir(), 'zeusi-test-home-'));

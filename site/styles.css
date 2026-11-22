@@ -1,0 +1,683 @@
+/* zeusi.ai landing: static, no third-party requests. connect.js only enhances (copy, tabs). */
+:root {
+  --bg: #10141d;
+  --bg-raised: #171c28;
+  --line: #2a3142;
+  --cream: #fef7ed;
+  --text: #eef0f4;
+  --muted: #c3c8d2;
+  --orange: #d98b45;
+  --orange-hover: #e59c58;
+  --green: #4f5d42;
+  --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  --pad: clamp(1.25rem, 5.5vw, 5.5rem);
+}
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+body {
+  margin: 0;
+  background-color: var(--bg);
+  /* Faint faceted planes, as in the dark mockup. */
+  background-image:
+    linear-gradient(118deg, transparent 0 46%, rgb(255 255 255 / 0.012) 46% 63%, transparent 63%),
+    linear-gradient(64deg, transparent 0 58%, rgb(255 255 255 / 0.009) 58% 74%, transparent 74%),
+    linear-gradient(160deg, transparent 0 70%, rgb(0 0 0 / 0.12) 70%);
+  background-attachment: fixed;
+  color: var(--text);
+  font-family: var(--font);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--orange); outline-offset: 3px; border-radius: 4px; }
+
+/* Logo: same SVG shapes everywhere, colour from currentColor. */
+.logo { display: block; width: auto; height: 100%; }
+.brand { display: inline-block; height: clamp(2.25rem, 3.4vw, 2.9rem); color: var(--cream); }
+.logo-green, .on-light .brand { color: var(--green); }
+
+/* Hero */
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  align-items: center;
+  gap: clamp(1rem, 3vw, 3rem);
+  /* First row fills the screen but lets the top of the film peek in; the film is the second row. */
+  grid-template-rows: minmax(calc(100svh - 7rem), auto) auto;
+  row-gap: clamp(1.5rem, 4vh, 3rem);
+  padding: clamp(1.5rem, 4vh, 3rem) var(--pad);
+}
+
+.hero-copy { display: flex; flex-direction: column; align-items: flex-start; }
+.hero-copy .brand { margin-bottom: clamp(2.5rem, 12vh, 7.5rem); }
+
+h1 {
+  margin: 0;
+  color: #fff;
+  font-size: clamp(2.6rem, 4.7vw, 4.75rem);
+  font-weight: 650;
+  line-height: 1.06;
+  letter-spacing: -0.025em;
+}
+
+.sub {
+  margin: clamp(1.25rem, 3.5vh, 2rem) 0 0;
+  color: var(--muted);
+  font-size: clamp(1.1rem, 1.6vw, 1.5rem);
+  line-height: 1.6;
+}
+h1 span, .sub span { display: block; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: clamp(1.75rem, 5vh, 2.75rem); }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3.25rem;
+  padding: 0.8rem 1.9rem;
+  border-radius: 6px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 0.15s ease;
+}
+.btn-primary { background: var(--orange); color: var(--bg); }
+.btn-primary:hover { background: var(--orange-hover); }
+
+.hero-art {
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.hero-art img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: min(calc(100svh - 9rem), 720px);
+  /* Fade the illustration's own navy edges into the page. */
+  -webkit-mask-image: radial-gradient(ellipse 70% 74% at 52% 50%, #000 52%, transparent 88%);
+  mask-image: radial-gradient(ellipse 70% 74% at 52% 50%, #000 52%, transparent 88%);
+}
+
+/* Connect */
+.connect {
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: clamp(3rem, 10vh, 6rem) var(--pad) clamp(4rem, 12vh, 7rem);
+  border-top: 1px solid var(--line);
+}
+.connect h2 {
+  margin: 0 0 1rem;
+  color: #fff;
+  font-size: clamp(1.75rem, 3vw, 2.4rem);
+  font-weight: 650;
+  letter-spacing: -0.015em;
+}
+.connect h3 { margin: 2.25rem 0 0.75rem; color: var(--cream); font-size: 1.05rem; font-weight: 600; }
+.connect p { margin: 0; color: var(--muted); font-size: 1.05rem; }
+.connect .note { margin-top: 1rem; font-size: 0.98rem; }
+.connect .after { margin-top: 0.75rem; font-size: 0.98rem; }
+.connect ol, .connect ul { margin: 0; padding-left: 1.4rem; color: var(--muted); font-size: 1.05rem; }
+.connect li + li { margin-top: 0.45rem; }
+.connect strong { color: var(--cream); font-weight: 600; }
+.connect li code { color: var(--text); }
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.connect .lead { color: var(--text); font-size: clamp(1.1rem, 1.6vw, 1.25rem); margin-bottom: 0.75rem; }
+
+/* The one URL to paste */
+.url-block { margin-top: 2rem; }
+.connect .url-label {
+  margin-bottom: 0.5rem;
+  color: var(--cream);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.url-field {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.6rem 0.6rem 1.25rem;
+  background: var(--bg-raised);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--orange);
+  border-radius: 8px;
+}
+.url {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--cream);
+  font-size: clamp(1.05rem, 2.3vw, 1.45rem);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+  user-select: all;
+  -webkit-user-select: all;
+}
+
+/* Copy buttons (shown by connect.js only) */
+.copy {
+  flex: none;
+  min-width: 4.75rem;
+  min-height: 2.75rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--cream);
+  font: 600 0.95rem/1 var(--font);
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.copy:hover { border-color: var(--orange); color: #fff; }
+.copy-url { background: var(--orange); border-color: var(--orange); color: var(--bg); }
+.copy-url:hover { background: var(--orange-hover); border-color: var(--orange-hover); color: var(--bg); }
+.code-block { position: relative; margin-top: 0.75rem; }
+.code-block:has(> .copy:not([hidden])) pre { padding-right: 6rem; }
+.code-block .copy { position: absolute; top: 0.45rem; right: 0.45rem; }
+
+/* App picker: tabs with JS, stacked panels without */
+.connect .pick-title { margin-top: 2.75rem; }
+.clients { min-width: 0; }
+.tablist {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+.tablist[hidden] { display: none; }
+[role="tab"] {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 2.9rem;
+  padding: 0.45rem 0.95rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+}
+[role="tab"]:hover { border-color: #3d4659; color: var(--text); }
+[role="tab"][aria-selected="true"] {
+  border-color: var(--orange);
+  background: var(--bg-raised);
+  color: #fff;
+  box-shadow: inset 0 -2px 0 var(--orange);
+}
+.tab-name { font-size: 0.98rem; font-weight: 600; line-height: 1.2; }
+.tab-kind { font-size: 0.75rem; line-height: 1.2; color: var(--muted); }
+[role="tab"][aria-selected="true"] .tab-kind { color: var(--cream); }
+
+.panel {
+  padding: 1.25rem 1.5rem 1.4rem;
+  background: rgb(23 28 40 / 0.6);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.panel + .panel { margin-top: 1rem; }
+.tabs-ready .panel + .panel { margin-top: 0; }
+.panel[hidden] { display: none; }
+.connect .panel-title { margin: 0 0 0.85rem; }
+.tabs-ready .panel-title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.connect .steps li::marker { color: var(--orange); font-weight: 600; }
+
+/* What happens when you sign in */
+.connect .signin {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: signin;
+}
+.connect .signin li {
+  margin: 0;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg-raised);
+  counter-increment: signin;
+}
+.signin li::before {
+  content: counter(signin);
+  display: inline-grid;
+  place-items: center;
+  width: 1.7rem;
+  height: 1.7rem;
+  margin-bottom: 0.6rem;
+  border-radius: 50%;
+  background: var(--orange);
+  color: var(--bg);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+.signin strong, .signin span { display: block; }
+.signin span { margin-top: 0.2rem; font-size: 0.95rem; }
+
+/* Your first 5 minutes */
+.connect .guide-steps {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: guide;
+}
+.connect .guide-steps li {
+  display: grid;
+  grid-template-columns: 1.7rem 1fr;
+  column-gap: 0.9rem;
+  margin: 0;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg-raised);
+  counter-increment: guide;
+}
+.guide-steps li > * { grid-column: 2; min-width: 0; }
+.guide-steps li::before {
+  content: counter(guide);
+  grid-column: 1;
+  grid-row: 1 / span 12; /* a step may hold more than two blocks (step 5): all of them stay in column 2 */
+  display: inline-grid;
+  place-items: center;
+  width: 1.7rem;
+  height: 1.7rem;
+  border-radius: 50%;
+  background: var(--orange);
+  color: var(--bg);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+.guide-steps strong, .guide-steps span { display: block; }
+.guide-steps span { margin-top: 0.2rem; font-size: 0.95rem; }
+.guide-steps a { color: var(--cream); }
+.guide-steps span code { overflow-wrap: anywhere; }
+
+pre {
+  margin: 0;
+  padding: 1rem 1.25rem;
+  overflow-x: auto;
+  background: var(--bg-raised);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+code { font-family: var(--mono); font-size: 0.92em; }
+pre code { color: var(--cream); font-size: 0.9rem; line-height: 1.6; }
+p code { color: var(--text); }
+
+/* Phone and narrow tablets: copy first, then the art. */
+@media (max-width: 820px) {
+  .hero {
+    grid-template-columns: 1fr;
+    min-height: 0;
+    padding-top: 1.75rem;
+    gap: 2rem;
+  }
+  .hero-copy .brand { margin-bottom: 2.5rem; }
+  h1 { font-size: clamp(2.35rem, 11vw, 3.5rem); }
+  .hero-art img { width: min(100%, 26rem); max-height: none; }
+  .btn { width: 100%; }
+  pre { padding: 0.9rem 1rem; }
+  pre code { font-size: 0.74rem; }
+  pre.wrap code { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 0.85rem; }
+  .actions { width: 100%; }
+  .url-field { flex-wrap: wrap; padding: 0.75rem; }
+  .url-field .copy { width: 100%; }
+  .tablist {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    margin-right: calc(-1 * var(--pad));
+    padding: 0 var(--pad) 0.35rem 0;
+    scroll-snap-type: x proximity;
+    scrollbar-width: thin;
+  }
+  [role="tab"] { flex: none; min-height: 2.75rem; scroll-snap-align: start; }
+  .panel { padding: 1rem 1.1rem 1.15rem; }
+  .connect .signin { grid-template-columns: 1fr; }
+  .code-block:has(> .copy:not([hidden])) pre { padding-right: 1rem; padding-top: 3.4rem; }
+}
+
+/* ------------------------------------------------------------------------------------------------
+   The hero film (wow.js). The 16:9 box is reserved by aspect-ratio, so nothing shifts when the poster or
+   the video arrives. Config: the data-*-src paths on #film. Empty data-sound-src = "Film coming soon", no button. */
+.film { grid-column: 1 / -1; width: min(100%, 64rem); margin: 0 auto; }
+.film-frame {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--bg-raised);
+  box-shadow: 0 30px 80px -40px rgb(217 139 69 / 0.45);
+}
+.film-poster, .film-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.film-video { background: #000; }
+.film-overlay {
+  position: absolute;
+  /* Above the poster and the video (wow.js also inserts the video before the overlay), and never faded or
+     made click-through while the muted preview plays: "Watch with sound" stays visible, the hit target for
+     mouse and touch, and its focus ring stays visible. */
+  z-index: 1;
+  inset: auto 0 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  padding: clamp(1rem, 3vw, 1.75rem);
+  background: linear-gradient(to top, rgb(16 20 29 / 0.94), rgb(16 20 29 / 0.6) 60%, transparent);
+}
+.film-overlay p { margin: 0; }
+.film-title { flex: 1 1 100%; color: #fff; font-size: clamp(1.1rem, 2vw, 1.4rem); font-weight: 650; }
+.film-soon, .film-nojs { color: var(--cream); font-size: 0.98rem; }
+.film-soon {
+  padding: 0.35rem 0.8rem;
+  border: 1px solid var(--orange);
+  border-radius: 999px;
+}
+/* Exactly one honest line: no full film = coming soon; full film but no script = turn on JavaScript. */
+.film-nojs { display: none; }
+.film[data-sound-src]:not([data-sound-src=""]) .film-soon { display: none; }
+.film[data-sound-src]:not([data-sound-src=""]):not(.film-ready):not(.film-failed) .film-nojs { display: block; }
+.film-play {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 2.9rem;
+  padding: 0.6rem 1.3rem 0.6rem 1rem;
+  border: 0;
+  border-radius: 6px;
+  background: var(--orange);
+  color: var(--bg);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.film-play::before {
+  content: "";
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0.45rem 0 0.45rem 0.75rem;
+  border-color: transparent transparent transparent currentColor;
+}
+.film-play:hover { background: var(--orange-hover); }
+.film-play[hidden] { display: none; }
+.film-sound .film-overlay { display: none; }
+/* The preview's pause control (WCAG 2.2.2): always visible while the muted preview runs, not only on hover. */
+.film-pause {
+  position: absolute;
+  z-index: 2;
+  top: 0.75rem;
+  right: 0.75rem;
+  min-height: 2.25rem;
+  padding: 0.35rem 0.9rem;
+  border: 1px solid var(--orange);
+  border-radius: 6px;
+  background: rgb(16 20 29 / 0.88);
+  color: var(--cream);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.film-pause:hover { background: var(--bg-raised); }
+.film-pause[hidden] { display: none; }
+.film-failed .film-overlay::after { content: "The film could not be loaded."; color: var(--cream); }
+
+/* ------------------------------------------------------------------------------------------------
+   The startup terminal (wow.js). .term-full is the real, accessible text and reserves the size; while
+   typing it turns transparent and the aria-hidden .term-typed overlay is drawn on top of it. */
+.demo {
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: clamp(3rem, 10vh, 6rem) var(--pad);
+  border-top: 1px solid var(--line);
+}
+.demo h2 { margin: 0 0 1rem; color: #fff; font-size: clamp(1.75rem, 3vw, 2.4rem); font-weight: 650; letter-spacing: -0.015em; }
+.demo .lead { margin: 0 0 1.75rem; max-width: 46rem; color: var(--muted); font-size: clamp(1.05rem, 1.5vw, 1.2rem); }
+.demo .lead code { color: var(--cream); }
+.term {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #0b0e15;
+  overflow: hidden;
+  box-shadow: 0 30px 70px -45px rgb(0 0 0 / 0.9);
+}
+.term-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.65rem 1rem;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg-raised);
+}
+.term-dot { width: 0.7rem; height: 0.7rem; border-radius: 50%; background: var(--line); }
+.term-dot:first-child { background: var(--orange); }
+.term-name { margin-left: 0.6rem; color: var(--muted); font-family: var(--mono); font-size: 0.85rem; }
+.term-screen { position: relative; }
+.term-screen pre {
+  margin: 0;
+  padding: 1.1rem 1.25rem 1.4rem;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  overflow: visible;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.term-screen code { color: var(--text); font-size: 0.88rem; line-height: 1.65; }
+.term-typed { position: absolute; inset: 0; pointer-events: none; }
+.typing .term-full code, .typing .term-full .tl { color: transparent; }
+.tl-in { color: var(--orange); font-weight: 600; }
+.tl-meta { color: var(--muted); }
+.tl-key { color: var(--orange); }
+.tl-h { color: #fff; font-weight: 650; }
+.tl-li { color: var(--cream); }
+.term { position: relative; }
+/* In the bar's corner, out of flow: showing it never moves anything. */
+.term-replay {
+  position: absolute;
+  top: 0.3rem;
+  right: 0.6rem;
+  padding: 0.2rem 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--bg-raised);
+  color: var(--cream);
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+.term-replay:hover { border-color: var(--orange); }
+.term-replay[hidden] { display: none; }
+.demo .actions { margin-top: 2rem; }
+
+/* ------------------------------------------------------------------------------------------------
+   Paw prints (wow.js): a trail behind a mouse or pen anywhere on the page, and on touch one paw with a
+   soft amber glow at each tap. Fixed layer, never takes a click, a tap, focus or a scroll. */
+.paw-layer { position: fixed; inset: 0; z-index: 50; pointer-events: none; overflow: hidden; }
+.paw {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 18px;
+  height: 18px;
+  margin: -9px 0 0 -9px;
+  pointer-events: none;
+  /* One pad and four toes, drawn with gradients (no image request). */
+  background:
+    radial-gradient(ellipse 34% 28% at 50% 72%, var(--cream) 96%, transparent 100%),
+    radial-gradient(circle at 16% 40%, var(--cream) 10%, transparent 12%),
+    radial-gradient(circle at 37% 18%, var(--cream) 11%, transparent 13%),
+    radial-gradient(circle at 63% 18%, var(--cream) 11%, transparent 13%),
+    radial-gradient(circle at 84% 40%, var(--cream) 10%, transparent 12%);
+  opacity: 0;
+  transform: translate(var(--x), var(--y)) rotate(var(--r));
+  animation: paw 0.9s ease-out forwards;
+}
+@keyframes paw {
+  0% { opacity: 0.55; }
+  100% { opacity: 0; }
+}
+.paw-tap {
+  width: 22px;
+  height: 22px;
+  margin: -11px 0 0 -11px;
+  animation: paw-tap 0.7s ease-out forwards;
+}
+@keyframes paw-tap {
+  0% { opacity: 0.9; transform: translate(var(--x), var(--y)) rotate(var(--r)) scale(0.6); }
+  25% { opacity: 0.9; transform: translate(var(--x), var(--y)) rotate(var(--r)) scale(1); }
+  100% { opacity: 0; transform: translate(var(--x), var(--y)) rotate(var(--r)) scale(1); }
+}
+.paw-glow {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 64px;
+  height: 64px;
+  margin: -32px 0 0 -32px;
+  border-radius: 50%;
+  pointer-events: none;
+  /* Soft amber halo from the site palette (no image request). */
+  background: radial-gradient(circle, var(--orange) 0%, transparent 70%);
+  opacity: 0;
+  transform: translate(var(--x), var(--y)) scale(0.4);
+  animation: paw-glow 0.6s ease-out forwards;
+}
+@keyframes paw-glow {
+  0% { opacity: 0.5; transform: translate(var(--x), var(--y)) scale(0.4); }
+  100% { opacity: 0; transform: translate(var(--x), var(--y)) scale(1.3); }
+}
+
+/* ------------------------------------------------------------------------------------------------
+   What Zeusi remembers: example cards. Shown as they are without JS; wow.js adds .reveal-ready (hidden,
+   tilted) and .revealed (flipped in) on scroll. Reduced motion: wow.js does nothing. */
+.remembers { max-width: 64rem; }
+.connect .example-flag {
+  display: inline-block;
+  margin: 1.25rem 0 0;
+  padding: 0.3rem 0.8rem;
+  border: 1px dashed var(--orange);
+  border-radius: 999px;
+  color: var(--cream);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.connect .cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 1.25rem 0 0;
+  padding: 0;
+  list-style: none;
+  perspective: 1200px;
+}
+.connect .cards li { margin: 0; }
+.card {
+  display: flex;
+  flex-direction: column;
+  padding: 1.2rem 1.25rem 1.3rem;
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--orange);
+  border-radius: 12px;
+  background: var(--bg-raised);
+}
+.connect .card-kind { color: var(--orange); font-size: 0.8rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+.connect .card-words { margin: 0.6rem 0 1rem; color: #fff; font-size: 1.08rem; line-height: 1.45; }
+.card-fields { display: grid; gap: 0.45rem; margin: auto 0 0; font-size: 0.88rem; }
+.card-fields div { display: grid; grid-template-columns: 5.5rem 1fr; gap: 0.5rem; }
+.card-fields dt { color: var(--muted); font-family: var(--mono); font-size: 0.82rem; }
+.card-fields dd { margin: 0; min-width: 0; color: var(--text); overflow-wrap: anywhere; }
+.card-fields code { color: var(--cream); }
+.reveal-ready {
+  opacity: 0;
+  transform: rotateX(-14deg) translateY(1.5rem);
+  transform-origin: 50% 0;
+  transition: opacity 0.6s ease, transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.reveal-ready:nth-child(2) { transition-delay: 0.12s; }
+.reveal-ready:nth-child(3) { transition-delay: 0.24s; }
+.reveal-ready.revealed { opacity: 1; transform: none; }
+
+@media (max-width: 820px) {
+  .hero { grid-template-rows: auto auto; }
+  .film-frame { border-radius: 10px; }
+  .film-overlay { padding: 0.85rem; }
+  .film-title { font-size: 1rem; }
+  .connect .cards { grid-template-columns: 1fr; }
+  .term-screen code { font-size: 0.78rem; }
+  .term-screen pre { padding: 0.9rem 0.9rem 1.1rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn, .copy, [role="tab"] { transition: none; }
+  .reveal-ready { transition: none; }
+  .reveal-ready { opacity: 1; transform: none; }
+  .paw, .paw-glow { animation: none; }
+  .paw-layer { display: none; }
+}
+
+/* Footer (every page) and the Privacy / Terms / Security pages */
+.site-footer {
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: 2rem var(--pad) 3rem;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+.site-footer p { margin: 0 0 0.6rem; }
+.site-footer nav { display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; }
+.site-footer a { color: var(--cream); }
+.page-head { max-width: 46rem; margin: 0 auto; padding: clamp(1.5rem, 5vh, 2.5rem) var(--pad) 0; }
+.legal { border-top: 0; padding-top: clamp(2rem, 6vh, 3.5rem); }
+.legal h1 { margin: 0 0 1rem; font-size: clamp(2rem, 4vw, 2.8rem); }
+.legal p + p, .legal ul + p, .legal p + ul { margin-top: 0.75rem; }
+.legal .todo { color: var(--orange); }

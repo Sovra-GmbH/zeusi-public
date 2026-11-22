@@ -1,0 +1,2 @@
+# b52fde9:scripts/test-hermetic.ts line 15: the env scrub before this pass (#14 review P2-3: keeps the owner URL names src/config.ts reads)
+const SCRUB = /^(PG|DATABASE_URL)|PASSWORD|PASSWD|SECRET|TOKEN|API_KEY|PGPASS/i;

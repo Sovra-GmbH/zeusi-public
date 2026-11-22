@@ -1,0 +1,2 @@
+# 15403da:test/search-decisions.test.ts line 43 (#16 branch, after #12): raw mkdtemp re-added; fixed in 1ad358b
+  home = mkdtempSync(join(tmpdir(), 'zeusi-search-dec-'));

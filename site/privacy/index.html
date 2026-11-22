@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Privacy · zeusi</title>
+  <meta name="description" content="Privacy policy for Zeusi: what is stored, where, who else handles it, how long it is kept and how to have it deleted.">
+  <meta name="theme-color" content="#10141d">
+  <meta name="color-scheme" content="dark">
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+  <header class="page-head">
+    <a class="brand" href="/" aria-label="zeusi home">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="-2 0 194 62" class="logo" aria-hidden="true" focusable="false">
+        <g fill="none" stroke="currentColor">
+          <path stroke-width="9.5" d="M0.5 24.75H32L1.5 55.25H33M42.75 40H74.25A15.75 15.25 0 1 0 70.2 50.2M88.75 20V40A15.25 15.25 0 0 0 119.25 40M119.25 20V60M156.55 27.68A12.75 7.63 0 1 0 146.5 40A12.75 7.63 0 1 1 136.45 52.32M173.75 20V60"/>
+          <path stroke-width="3" stroke-linecap="round" stroke-linejoin="round" d="M161.75 15C160.15 10 161.15 5 163.75 1.8C166.25 4.6 168.75 6.6 170.55 7.3Q173.75 8.2 176.95 7.3C178.75 6.6 181.25 4.6 183.75 1.8C186.35 5 187.35 10 185.75 15"/>
+        </g>
+      </svg>
+    </a>
+  </header>
+  <main class="connect legal" id="privacy">
+    <h1>Privacy</h1>
+    <p class="lead">This page says what Zeusi stores, where it is kept, who else handles it, and how to have it deleted. It says only what the code and the live servers do now.</p>
+
+    <h2>Who runs Zeusi</h2>
+    <p>This policy explains how Sovra GmbH uses and protects your personal data when you use Zeusi: this website (<code>zeusi.ai</code>) and the Zeusi server (<code>mcp.zeusi.dev</code>). Words such as &ldquo;personal data&rdquo; and &ldquo;controller&rdquo; mean what they mean in the FADP or the GDPR.</p>
+    <p>Zeusi is run by Sovra GmbH, Cham, Switzerland. Sovra GmbH is the controller of your personal data under the Swiss Federal Act on Data Protection (FADP). Where the EU General Data Protection Regulation (GDPR) applies, Sovra GmbH is the controller under it too.</p>
+    <p><span class="todo">[Open question: is an EU representative under GDPR art. 27 needed?]</span></p>
+    <p>Contact: <a href="mailto:hello@sovra.ch">hello@sovra.ch</a></p>
+
+    <h2 id="imprint">Imprint</h2>
+    <p class="imprint">Sovra GmbH<br>
+      Sinserstrasse 65<br>
+      6330 Cham<br>
+      Switzerland<br>
+      Registered seat: Cham (canton of Zug)<br>
+      UID: CHE-370.623.395<br>
+      Email: <a href="mailto:hello@sovra.ch">hello@sovra.ch</a></p>
+
+    <h2>What Zeusi stores</h2>
+    <ul>
+      <li><strong>From GitHub, when you sign in.</strong> Zeusi asks GitHub for <code>read:user</code> and <code>user:email</code>. It keeps your GitHub user id and your GitHub login. It reads your verified email addresses once, to check whether you belong to the operator&rsquo;s team, and does not store them. It does not keep your GitHub token.</li>
+      <li><strong>Your assistant&rsquo;s access.</strong> For each assistant you connect: your GitHub user id and login, your workspace id, the name the assistant app gave itself, and hashes of its tokens. Access that has ended is removed from this file later.</li>
+      <li><strong>Your workspace.</strong> The notes, decisions and other items you add. Zeusi shows a preview first and keeps it for up to 30 minutes: the preview&rsquo;s filtered text is kept on the Zeusi server for that time. Nothing is saved until you say yes. A sync routine that you set up yourself writes without a preview; each sync batch is kept on the Zeusi server only while it runs.</li>
+      <li><strong>Sign-in records.</strong> One record per sign-in: the time, a request id, your GitHub user id, your GitHub login, your workspace id, the kind of sign-in and the result. No email address and no IP address.</li>
+      <li><strong>Write records.</strong> One line per import preview, import and sync: the time, a request id, your GitHub user id, your workspace id, a short hash of your access, what was done, the result and counts. Never the text, a title or a file path.</li>
+      <li><strong>Request logs.</strong> One line per request: the time, a request id, an access id, a label for the kind of access, the tool, how long it took, counts, the status and the kind of error. Never your search words or the text of your items.</li>
+      <li><strong>&ldquo;Did this answer it?&rdquo; feedback.</strong> The time, a query id, a keyed hash of the item&rsquo;s reference, and yes or no.</li>
+    </ul>
+    <p>The records below are created only when someone sets up or uses a workspace key on the sign-in page:</p>
+    <ul>
+      <li><strong>Key-setup records.</strong> One line per key setup or unlock: the time (<code>ts</code>), a request id (<code>request_id</code>), your workspace id (<code>tenant_id</code>), what was done (<code>action</code>: <code>enroll</code>, <code>unlock_passkey</code> or <code>unlock_recovery</code>), the result (<code>outcome</code>) and a count (<code>count</code>: the recovery attempts for your workspace in the last hour, for <code>unlock_recovery</code> only). Counts only: no key, no code, no token, no IP address and no text.</li>
+      <li><strong>Recovery-attempt counter.</strong> For each workspace, and for each keyed hash of an IP address, the times of the recovery attempts in the last hour. It is used to allow 5 attempts per hour for each. An entry is dropped once its times are older than one hour, the next time an attempt is counted.</li>
+      <li><strong>Your wrapped workspace key, in the database.</strong> One row per passkey and one recovery row (<code>key_wraps</code>): your workspace id, a wrap id, the kind (<code>passkey</code> or <code>recovery</code>), a key version, the wrapped key (<code>sealed_dek</code>) and the time it was made. A passkey row also holds the passkey&rsquo;s credential id and a salt, and can hold its public key and signature counter.</li>
+      <li><strong>Your wrapped workspace key, beside your assistant&rsquo;s access.</strong> When a sign-in unlocks the workspace key, that assistant&rsquo;s access also holds the key wrapped under its current access token and under its current refresh token (<code>session_wraps</code>), with a key version. They are replaced when the tokens are renewed, and removed when the access is revoked or removed from the file.</li>
+    </ul>
+    <p>You do not have to give Zeusi any personal data. But without a GitHub sign-in, Zeusi cannot give you a workspace.</p>
+
+    <h2>How Zeusi gets this data</h2>
+    <ul>
+      <li><strong>From GitHub</strong>, when you sign in: your GitHub user id, your login and, once, your verified email addresses.</li>
+      <li><strong>From your assistant app</strong>, when you connect it: the name it gives itself.</li>
+      <li><strong>From you, through your assistant</strong>: the items you add, and your &ldquo;Did this answer it?&rdquo; answers.</li>
+      <li><strong>Automatically</strong>, while you use Zeusi: the sign-in records, the write records and the request logs; and, only when someone sets up or uses a workspace key, the key-setup records and the recovery-attempt counter.</li>
+    </ul>
+
+    <h2>Why Zeusi uses your data</h2>
+    <p>Sovra GmbH uses your data for the purposes below. Where the GDPR applies, the legal basis is given for each.</p>
+    <ul>
+      <li><strong>To run Zeusi for you</strong>: to sign you in, keep your workspace, show previews and send answers to your assistant. Legal basis: the contract with you (GDPR art. 6(1)(b)).</li>
+      <li><strong>To keep Zeusi secure</strong>: to find and stop attacks and abuse, with the request logs, the sign-in and write records, and the limits that use your IP address. Legal basis: legitimate interests (GDPR art. 6(1)(f)).</li>
+      <li><strong>To make search better</strong>: to see whether an answer helped, with your &ldquo;Did this answer it?&rdquo; answers. Legal basis: legitimate interests (GDPR art. 6(1)(f)).</li>
+      <li><strong>To meet legal duties</strong>: to answer requests about your rights and to report breaches where the law requires it. Legal basis: legal obligations (GDPR art. 6(1)(c)).</li>
+    </ul>
+
+    <h2>Your IP address</h2>
+    <p>The Zeusi server uses your IP address in memory, to limit how many requests and sign-ups it accepts. It does not store the address itself. One limit stores a keyed hash of it: when someone uses the recovery option to unlock a workspace key, the server keeps a keyed hash (HMAC-SHA-256) of the IP address with the times of the attempts in the last hour, to allow 5 attempts per hour. The hash is dropped once its times are older than one hour, the next time an attempt is counted. Fly.io and Vercel see your IP address when they pass on your request, and may log it under their own terms.</p>
+
+    <h2>Cookies and tracking</h2>
+    <p>A cookie is a small text file that your browser stores for a website.</p>
+    <p>This website (<code>zeusi.ai</code>) sets no cookies and has no analytics or trackers. It makes no request to other sites, with one exception: when you press &ldquo;Watch with sound&rdquo;, the film loads from Vercel&rsquo;s file storage.</p>
+    <p>The sign-in page on <code>mcp.zeusi.dev</code> sets one cookie for 10 minutes, only to finish your sign-in. Its name is <code>__Host-zeusi_oauth</code>. Sign-in does not work without it.</p>
+    <p>Neither site uses local storage, tracking pixels or fingerprinting.</p>
+
+    <h2>Who else handles your data</h2>
+    <p>Sovra GmbH uses these service providers to run Zeusi:</p>
+    <ul>
+      <li><strong>GitHub</strong>: sign-in. GitHub is a US company.</li>
+      <li><strong>Fly.io</strong>: runs the Zeusi server in Frankfurt, Germany. Your assistant&rsquo;s access, the sign-in records, the write records, the feedback lines, previews (for up to 30 minutes) and the server&rsquo;s logs are kept there. When someone sets up or uses a workspace key, the key-setup records, the recovery-attempt counter and the wrapped keys beside your assistant&rsquo;s access are kept there too.</li>
+      <li><strong>Neon</strong>: the database, in Frankfurt (EU). Your workspace is stored there, with a list that links your GitHub user id to your workspace and, once a workspace key is set up, the wrapped key rows.</li>
+      <li><strong>Vercel</strong>: serves this website and the film file.</li>
+      <li><strong>OpenAI</strong>: Zeusi&rsquo;s code uses OpenAI embeddings (<code>text-embedding-3-small</code>, through OpenAI&rsquo;s EU endpoint) only for the operator&rsquo;s own team workspace. No text from a personal workspace is sent to OpenAI. Search in a personal workspace works by words only.</li>
+    </ul>
+    <p><span class="todo">[TODO: legal review: data processing agreements with each provider, and the legal basis for transfers outside Switzerland and the EU]</span></p>
+
+    <h2>Data outside Switzerland and the EU</h2>
+    <p>The Zeusi server and the database are in Frankfurt, Germany (EU). GitHub, which handles sign-in, is a US company, and so are some of the other service providers above.</p>
+    <p>Where data goes to a country without an adequate level of data protection and without suitable safeguards, authorities there may be able to access it, and you may not be able to enforce your rights there.</p>
+
+    <h2>When Sovra GmbH may disclose your data</h2>
+    <p>Sovra GmbH may disclose your personal data where it believes in good faith that this is needed:</p>
+    <ul>
+      <li>to meet a legal obligation, for example a valid order from a court or an authority;</li>
+      <li>to protect the security of Zeusi and to defend the rights of Sovra GmbH;</li>
+      <li>to prevent or look into wrongdoing in connection with Zeusi.</li>
+    </ul>
+
+    <h2>Your AI assistant</h2>
+    <p>When your assistant asks Zeusi, Zeusi sends the answer to that assistant. The company that runs your assistant then has that answer, under its own terms. Zeusi does not control what happens to it there.</p>
+
+    <h2>AI training</h2>
+    <p>Zeusi does not train AI models on your data. Zeusi&rsquo;s code has no training step. Zeusi makes no promise for OpenAI or for your assistant&rsquo;s company; their own terms apply.</p>
+
+    <h2>What the import filters out</h2>
+    <p>When you fill your memory, Zeusi filters out passwords, tokens and sign-in codes: an entry that holds one is left out. Names, emails and phone numbers are not filtered out, so check your files first. Never put private client details in Zeusi.</p>
+
+    <h2>Who can read your workspace</h2>
+    <p>Your workspace is kept apart from other users: another user&rsquo;s Zeusi sign-in cannot read it.</p>
+    <p>The workspace key is opened only by your passkey, your recovery code, or your signed-in session. While you are signed in, the Zeusi server decrypts your memory to answer your AI assistant.</p>
+    <p>Whoever holds the admin database login can see that your workspace exists, how many items it holds, how large they are and when it changes.</p>
+    <p>Your workspace is not end-to-end encrypted.</p>
+    <p>More on this, and on what the operator can see, is on the <a href="/security">Security</a> page.</p>
+
+    <h2>How your data is protected</h2>
+    <p>Sovra GmbH takes technical and organisational measures to protect your data against loss, change and access by others. The measures in place today are on the <a href="/security">Security</a> page. No way of sending or storing data over the internet is completely safe, so Sovra GmbH cannot promise absolute security.</p>
+
+    <h2>How long data is kept</h2>
+    <p>No fixed retention period is set yet. Zeusi has no job that deletes workspaces or records on a schedule. <span class="todo">[TODO: retention periods for workspaces, sign-in records, write records, logs and feedback]</span></p>
+    <p>The database keeps restore points for 6 hours.</p>
+    <p>Some things expire by design: the sign-in cookie after 10 minutes, a preview after 30 minutes, an access token after 1 hour and a refresh token after 30 days.</p>
+
+    <h2>Deleting your data</h2>
+    <p>There is no self-serve delete button yet. To have your workspace deleted, write to <a href="mailto:hello@sovra.ch">hello@sovra.ch</a>. Sovra GmbH handles a deletion request within 30 days.</p>
+    <p>The operator has a tool that deletes a whole workspace: its items, its access and its database account. The tool also removes the wrapped key rows from the database and the wrapped keys beside the workspace&rsquo;s access. Some things can remain after that: the sign-in records, the write records, the key-setup records, the recovery-attempt counter (until its times are older than one hour and the next attempt is counted), the server&rsquo;s logs, the feedback file (unless it is removed by hand), the database&rsquo;s restore points (for 6 hours) and any snapshots of the Zeusi server&rsquo;s disk. <span class="todo">[TODO: how long Fly.io keeps snapshots of the Zeusi server&rsquo;s disk]</span></p>
+    <p>The operator&rsquo;s delete steps take a snapshot or branch of the database first. It holds a copy of the workspace until it is removed. <span class="todo">[TODO: when these snapshots and branches are removed]</span></p>
+    <p>You can stop using Zeusi at any time by removing the connector from your assistant. That does not delete your workspace.</p>
+
+    <h2>Your rights</h2>
+    <p>Under the FADP, and where it applies the GDPR, you can ask for access to your data, for its correction or deletion, and for a copy in a portable format. You can also object to how it is used. Write to <a href="mailto:hello@sovra.ch">hello@sovra.ch</a>.</p>
+    <p>Where the GDPR applies, you can also ask Sovra GmbH to restrict how it uses your data. You can object in particular where Sovra GmbH relies on its legitimate interests. Sovra GmbH may ask you to show who you are before it answers.</p>
+    <p>You can complain to the Federal Data Protection and Information Commissioner (FDPIC). Where the GDPR applies, you can also complain to the data protection authority in your EU country.</p>
+
+    <h2>If there is a breach</h2>
+    <p>If a breach of your data is likely to lead to a high risk for you, Sovra GmbH reports it to the FDPIC as soon as possible, as FADP art. 24 requires. Sovra GmbH also informs the people affected where the law requires it.</p>
+
+    <h2>Changes to this page</h2>
+    <p>Sovra GmbH may update this policy. A change takes effect when it is posted on this page.</p>
+    <p>Sovra GmbH announces changes on this page. Last updated: 21 November 2026.</p>
+
+    <h2>Contact</h2>
+    <p>Questions about this policy: write to <a href="mailto:hello@sovra.ch">hello@sovra.ch</a>, or to Sovra GmbH, Sinserstrasse 65, 6330 Cham, Switzerland.</p>
+  </main>
+  <footer class="site-footer">
+    <p>Zeusi is run by Sovra GmbH, Cham, Switzerland.</p>
+    <nav aria-label="Legal">
+      <a href="/privacy" aria-current="page">Privacy</a>
+      <a href="/terms">Terms</a>
+      <a href="/security">Security</a>
+    </nav>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,16 @@
+# 77b63d4:package.json (before #14 / b15f177): npm test was a plain node --test (scripts block only; neon:* lines dropped)
+{
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/cli.js",
+    "mcp": "node dist/mcp.js",
+    "typecheck": "tsc -p tsconfig.test.json",
+    "test": "node --test test/*.test.ts",
+    "migrate": "node dist/cli.js migrate",
+    "prove": "node dist/cli.js prove",
+    "embed-smoke": "node dist/cli.js embed-smoke",
+    "hooks:install": "sh scripts/install-hooks.sh",
+    "secret-scan": "gitleaks git --redact --no-banner --config .gitleaks.toml .",
+    "wall:dryrun": "node scripts/wall-dryrun.ts"
+  }
+}

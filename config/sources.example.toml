@@ -1,0 +1,127 @@
+# Zeusi importer sources.
+# Template only. Copy it to config/sources.toml (gitignored, private) and edit the paths.
+# Paths and repo names only: no secrets, no hosts, no content.
+#
+# The hard wall (areas, P&L paths and lanes, protected names) lives in the database
+# (zeusi.wall_denylist) and in src/wall.ts. `loadSources()` refuses a walled path or repo
+# at load time. Each source sets its scope: work (default), product or client.
+
+# Protected names (docs/wall.md "Protected names"): people or companies whose content
+# Zeusi must never hold. Keep the real list ONLY in your private config/sources.toml.
+# Any string in this file that mentions one is refused, and `zeusi wall seed-sql`
+# prints the owner SQL that adds their hard rules to the database. The fictional
+# The built-in example name in this repo is always protected and needs no entry.
+[wall]
+protected_names = []
+
+[[source]]
+name = "vault-work"
+kind = "vault_note"
+scope = "work"
+root = "~/KnowledgeVault"
+include = ["Work/**/*.md"]
+
+[[source]]
+name = "vault-product"
+kind = "vault_note"
+scope = "product"
+root = "~/KnowledgeVault"
+include = ["Work/product/**/*.md", "Work/products/product/**/*.md"]
+content_scan = true   # OD5: ingest only when the content scanner is clean
+
+[[source]]
+name = "vault-client"
+kind = "vault_note"
+scope = "client"
+root = "~/KnowledgeVault"
+include = ["ClientCo/**/*.md"]
+
+[[source]]
+name = "vault-locks-and-decisions"
+kind = "vault_note"
+scope = "work"
+root = "~/KnowledgeVault"
+include = ["Work/ops/*-lock*.md", "Work/handbook/*-decision*.md"]
+parse = "decisions"   # plus any vault note with `status: locked` or a `locks:` list
+
+[[source]]
+name = "vault-home-and-wiki"
+kind = "vault_note"
+scope = "work"
+root = "~/KnowledgeVault"
+include = ["Home.md", "wiki/*.md"]
+
+[[source]]
+name = "lanes"
+kind = "lane_md"
+scope = "work"
+root = "~/agent-runner/lanes"
+include = ["*/LANE.md"]
+parse = "decisions"   # GO, ruling, approvals sections; content-scanned
+
+[[source]]
+name = "review-ledgers"
+kind = "review_ledger"
+scope = "work"
+root = "~/agent-runner"
+include = ["reviews/rounds-ledger.tsv"]
+exclude = ["**/*.bak-*"]
+
+[[source]]
+name = "runner-logs"
+kind = "runner_log"
+scope = "work"
+root = "~/agent-runner"
+include = ["logs/*.log"]
+mode = "metadata_only"   # EXIT code + login label only; no log bodies
+
+[[source]]
+name = "assistant-memory"
+kind = "assistant_memory"
+scope = "work"
+root = "~/assistant/workspace"
+include = ["memory/*.md", "MEMORY.md"]
+exclude = ["**/*.bak*"]
+
+# Optional: a folder of daily markdown exports (`zeusi ingest hq-sync`). See docs/hq-sync.md.
+# Layout <root>/<project>/YYYY-MM-DD-<slug>.md. One source per project folder.
+
+[[source]]
+name = "hq-team"
+kind = "zeus_memory"
+scope = "work"
+root = "~/zeusi-sources/hq-export"
+include = ["team/*.md"]
+project = "team"
+
+
+[[source]]
+name = "hq-product"
+kind = "zeus_memory"
+scope = "product"
+root = "~/zeusi-sources/hq-export"
+include = ["northbank/*.md"]
+project = "northbank"
+content_scan = true
+
+[[source]]
+name = "hq-clientco"
+kind = "zeus_memory"
+scope = "client"
+root = "~/zeusi-sources/hq-export"
+include = ["clientco/*.md"]
+project = "clientco"
+
+[hq_export]
+held = []
+
+[github]
+org = "example-org"
+# Metadata only (no bodies, comments, or diffs).
+repos = [
+  "ops-repo",
+  "product-connector",
+  "product-agents",
+  "docs-site",
+]
+product_repos = ["product-connector", "product-agents"]

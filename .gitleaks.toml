@@ -1,0 +1,59 @@
+# Zeusi secret scan (PLAN.md R15, U1). Used by scripts/git-hooks/pre-commit.
+# Extends the gitleaks defaults with a rule for Postgres connection strings that
+# carry an inline password (the defaults do not flag weak/short passwords).
+title = "zeusi"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "zeusi-postgres-url-with-password"
+description = "Postgres connection string with an inline user:password"
+regex = '''postgres(?:ql)?://[^\s:/@'"`]+:[^\s/@'"`]+@'''
+keywords = ["postgres://", "postgresql://"]
+
+[[rules]]
+id = "zeusi-mcp-token"
+description = "Zeusi hosted MCP bearer token (zeusi_<token_id>_<secret>)"
+regex = '''zeusi_[a-z2-7]{12}_[A-Za-z0-9_-]{43}'''
+keywords = ["zeusi_"]
+
+[[rules]]
+id = "zeusi-oauth-token"
+description = "Zeusi hosted MCP OAuth access token, refresh token or authorization code (zeusi_at_/zeusi_rt_/zeusi_ac_<43>)"
+regex = '''zeusi_(?:at|rt|ac)_[A-Za-z0-9_-]{43}'''
+keywords = ["zeusi_at_", "zeusi_rt_", "zeusi_ac_"]
+
+# Security P0 (17 Nov 2026): partial / masked provider keys. The default rules need the FULL
+# key length (e.g. 35 characters after the Google prefix), so a truncated or masked fragment
+# passed. Same shapes as the runtime detector (src/secrets.ts). Go RE2: no lookbehind, so the
+# token start is matched explicitly and secretGroup 1 is the fragment itself.
+[[rules]]
+id = "zeusi-partial-provider-key"
+description = "Truncated provider key: a real prefix plus at least 6 key characters"
+regex = '''(?:^|[^A-Za-z0-9])((?:AIza|sk-ant-|sk-proj-|sk-svcacct-|github_pat_|gh[pousr]_|xox[abposr]-|sk_live_|rk_live_|fo1_)[A-Za-z0-9_-]{6,})'''
+secretGroup = 1
+keywords = ["aiza", "sk-ant-", "sk-proj-", "sk-svcacct-", "github_pat_", "ghp_", "gho_", "ghu_", "ghs_", "ghr_", "xoxa-", "xoxb-", "xoxp-", "xoxo-", "xoxs-", "xoxr-", "sk_live_", "rk_live_", "fo1_"]
+
+[[rules]]
+id = "zeusi-masked-provider-key"
+description = "Masked provider key fragment: a real prefix, an ellipsis / dots / asterisks / bullets, and key characters"
+regex = '''(?:^|[^A-Za-z0-9])((?:AIza|sk-ant-|sk-proj-|sk-|github_pat_|gh[pousr]_|xox[abposr]-|AKIA|ASIA|sk_live_|rk_live_|fo1_)[A-Za-z0-9_-]*(?:\x{2026}|\.{2,}|\*{2,}|\x{2022}{2,})[A-Za-z0-9_-]{2,})'''
+secretGroup = 1
+keywords = ["aiza", "sk-", "github_pat_", "ghp_", "gho_", "ghu_", "ghs_", "ghr_", "xox", "akia", "asia", "sk_live_", "rk_live_", "fo1_"]
+
+# Review r1 of PR #23 (P2-1): a single `*` / bullet or a spaced mask, and a key split over a line
+# break after at most 5 key characters. Both need a digit in the key characters (prose stays clean).
+[[rules]]
+id = "zeusi-weak-masked-provider-key"
+description = "Provider key fragment behind a single asterisk / bullet or a spaced mask, with a digit in the key characters"
+regex = '''(?:^|[^A-Za-z0-9])((?:AIza|sk-ant-|sk-proj-|github_pat_|gh[pousr]_|xox[abposr]-|AKIA|ASIA|sk_live_|rk_live_|fo1_)[A-Za-z0-9_-]{0,64}[ \x{00a0}]?(?:\x{2026}|\.{2,}|\*+|\x{2022}+)[ \x{00a0}]?[A-Za-z0-9_-]*[0-9][A-Za-z0-9_-]*)'''
+secretGroup = 1
+keywords = ["aiza", "sk-ant-", "sk-proj-", "github_pat_", "ghp_", "gho_", "ghu_", "ghs_", "ghr_", "xox", "akia", "asia", "sk_live_", "rk_live_", "fo1_"]
+
+[[rules]]
+id = "zeusi-split-provider-key"
+description = "Provider key split over a line break: prefix + up to 5 key characters, then the rest (with a digit) on the next line"
+regex = '''(?:^|[^A-Za-z0-9])((?:AIza|sk-ant-|sk-proj-|github_pat_|gh[pousr]_|xox[abposr]-|sk_live_|rk_live_|fo1_)[A-Za-z0-9_-]{0,5}[ \t]*\r?\n[ \t>]*[A-Za-z0-9_-]*[0-9][A-Za-z0-9_-]*)'''
+secretGroup = 1
+keywords = ["aiza", "sk-ant-", "sk-proj-", "github_pat_", "ghp_", "gho_", "ghu_", "ghs_", "ghr_", "xox", "sk_live_", "rk_live_", "fo1_"]

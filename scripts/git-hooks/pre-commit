@@ -1,0 +1,21 @@
+#!/bin/sh
+# Zeusi pre-commit secret scan (PLAN.md R15, U1). Installed by `npm run hooks:install`
+# (sets core.hooksPath=scripts/git-hooks). Fails closed when gitleaks is missing.
+# Output is redacted: a finding never prints the secret value.
+set -eu
+here=$(cd "$(dirname "$0")" && pwd)
+config="$here/../../.gitleaks.toml"
+GITLEAKS="${GITLEAKS:-}"
+if [ -z "$GITLEAKS" ]; then
+  GITLEAKS=$(command -v gitleaks 2>/dev/null || true)
+  [ -n "$GITLEAKS" ] || GITLEAKS=/opt/homebrew/bin/gitleaks
+fi
+if [ ! -x "$GITLEAKS" ]; then
+  echo "pre-commit: gitleaks not found ($GITLEAKS). Refusing to commit without a secret scan (R15)." >&2
+  exit 1
+fi
+root=$(git rev-parse --show-toplevel)
+if ! "$GITLEAKS" git --pre-commit --staged --redact --no-banner --verbose --log-level warn --config "$config" "$root"; then
+  echo "pre-commit: gitleaks found a possible secret in the staged changes. Commit refused." >&2
+  exit 1
+fi

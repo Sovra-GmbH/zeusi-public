@@ -1,0 +1,44 @@
+# Fly config for the hosted Zeusi MCP server (docs/hosting.md).
+# PLAN ONLY: committing this file deploys nothing. `fly deploy` is a later, separate GO.
+#
+# The image entrypoint (scripts/fly-entrypoint.sh) runs `node dist/mcp.js --hosted --data-dir /data`
+# as the `node` user: Bearer-token auth, fail closed (HTTP 503 until /data/mcp-tokens.json is
+# valid), HSTS on every response. Public edge: port 443 only, Fly TLS, no port 80 and no
+# HTTP -> HTTPS redirect. No [env] values and no secrets in this file.
+
+app = "your-zeusi-mcp"
+primary_region = "fra"
+kill_signal = "SIGTERM"
+kill_timeout = "10s"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[mounts]
+  source = "zeusi_data"
+  destination = "/data"
+
+[[services]]
+  protocol = "tcp"
+  internal_port = 8080
+  auto_stop_machines = "off"
+  auto_start_machines = false
+  min_machines_running = 1
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+
+  [services.concurrency]
+    type = "requests"
+    soft_limit = 50
+    hard_limit = 100
+
+  [[services.tcp_checks]]
+    interval = "15s"
+    timeout = "2s"
+    grace_period = "10s"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"

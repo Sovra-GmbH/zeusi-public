@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>zeusi: the memory your agents share</title>
+  <meta name="description" content="Zeusi is a shared memory for your AI assistants. They search it before they ask you, and every answer cites its source. Walled-off items are never returned.">
+  <meta name="theme-color" content="#10141d">
+  <meta name="color-scheme" content="dark">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preload" as="image" href="assets/hero.avif" type="image/avif" fetchpriority="high">
+  <link rel="stylesheet" href="styles.css">
+  <script src="connect.js" defer></script>
+  <script src="wow.js" defer></script>
+</head>
+<body>
+  <main>
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <a class="brand" href="./" aria-label="zeusi home">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="-2 0 194 62" class="logo" aria-hidden="true" focusable="false">
+            <g fill="none" stroke="currentColor">
+              <path stroke-width="9.5" d="M0.5 24.75H32L1.5 55.25H33M42.75 40H74.25A15.75 15.25 0 1 0 70.2 50.2M88.75 20V40A15.25 15.25 0 0 0 119.25 40M119.25 20V60M156.55 27.68A12.75 7.63 0 1 0 146.5 40A12.75 7.63 0 1 1 136.45 52.32M173.75 20V60"/>
+              <path stroke-width="3" stroke-linecap="round" stroke-linejoin="round" d="M161.75 15C160.15 10 161.15 5 163.75 1.8C166.25 4.6 168.75 6.6 170.55 7.3Q173.75 8.2 176.95 7.3C178.75 6.6 181.25 4.6 183.75 1.8C186.35 5 187.35 10 185.75 15"/>
+            </g>
+          </svg>
+        </a>
+        <h1 id="hero-title"><span>The memory</span> <span>your agents share.</span></h1>
+        <p class="sub">
+          <span>Search before you ask.</span>
+          <span>Cite every answer.</span>
+          <span>Walled-off items are never returned.</span>
+        </p>
+        <div class="actions">
+          <a class="btn btn-primary" href="#connect">Connect your AI</a>
+        </div>
+      </div>
+      <figure class="hero-art">
+        <picture>
+          <source srcset="assets/hero.avif" type="image/avif">
+          <source srcset="assets/hero.webp" type="image/webp">
+          <img src="assets/hero.jpg" width="580" height="720" alt="A dark cat curled around a glowing orb of connected points." fetchpriority="high" decoding="async">
+        </picture>
+      </figure>
+      <!-- The film. ONE config point: the data-*-src paths on #film. Poster, loop and captions: same-origin paths
+           in assets/film/. data-poster-src: the poster (the <img> below must use the same path); data-loop-webm-src,
+           then data-loop-mp4-src: the muted looping preview (WebM first); data-sound-src: the full film with sound,
+           loaded only when "Watch with sound" is pressed, served straight from its public Blob URL because the video
+           element needs HTTP Range answered exactly (a same-origin rewrite to Blob caches one range slice and breaks
+           iOS Safari; never add that rewrite); data-captions-src: optional .vtt for that film. Empty
+           data-sound-src = no button, "Film coming soon". See site/README.md. -->
+      <div class="film" id="film"
+           data-poster-src="assets/film/zeusi-poster.jpg"
+           data-loop-webm-src="assets/film/zeusi-hero-loop-720p.webm"
+           data-loop-mp4-src="assets/film/zeusi-hero-loop-720p.mp4"
+           data-sound-src="https://mwukcp9aqefvqnk6.public.blob.vercel-storage.com/assets/film/zeusi-explainer-full-1080p.mp4"
+           data-captions-src="" data-captions-lang="en" data-captions-label="English">
+        <div class="film-frame">
+          <img class="film-poster" src="assets/film/zeusi-poster.jpg" width="1920" height="1080" alt="" loading="lazy" decoding="async">
+          <div class="film-overlay">
+            <p class="film-title">The Zeusi film</p>
+            <p class="film-soon">Film coming soon</p>
+            <p class="film-nojs">Turn on JavaScript to play the film.</p>
+            <button type="button" class="film-play" hidden>Watch with sound</button>
+          </div>
+          <button type="button" class="film-pause" hidden>Pause preview</button>
+        </div>
+        <p class="sr-only" id="film-status" role="status" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <section id="first-run-demo" class="demo" aria-labelledby="demo-title">
+      <h2 id="demo-title">What a new workspace says</h2>
+      <p class="lead">In a new, empty personal workspace with filling on, <code>zeusi_startup</code> replies with a <code>message</code> and a <code>welcome</code>. Both are copied below, word for word, from the server. The first two lines are not part of the reply: they show your request and three fields of the reply (<code>workspace</code>, <code>empty</code>, <code>rules_served</code>). The reply has more fields. Your assistant shows it in its own way.</p>
+      <figure class="term" data-term>
+        <figcaption class="sr-only">The zeusi_startup reply for a new, empty workspace</figcaption>
+        <div class="term-bar" aria-hidden="true"><span class="term-dot"></span><span class="term-dot"></span><span class="term-dot"></span><span class="term-name">zeusi_startup</span></div>
+        <div class="term-screen">
+<pre class="term-full"><code><span class="tl tl-in">› Run zeusi_startup</span>
+<span class="tl tl-meta">zeusi_startup → workspace: "personal", empty: true, rules_served: 0</span>
+<span class="tl tl-key">message:</span>
+<span class="tl">Your workspace is empty: no rules, locks, focus or decisions yet. That is normal for a new workspace. Show the user the welcome below, say plainly that there is nothing to follow yet, and never invent rules. Ask "What can Zeusi do?" (resource zeusi://about) for what Zeusi is and does. Want me to fill your memory now? I'll show a preview first.</span>
+<span class="tl">Say "fill my memory" and paste your notes, or point me at an export; nothing is saved until you say yes.</span>
+<span class="tl"></span>
+<span class="tl tl-key">welcome:</span>
+<span class="tl tl-h"># Hello, I'm Zeusi.</span>
+<span class="tl"></span>
+<span class="tl">I'm a shared memory for you and your AI assistant, named after a cat. I keep your rules, locks, focus, decisions and notes, each with its source. I never invent: if I don't have something, I say so.</span>
+<span class="tl"></span>
+<span class="tl tl-h">## What I do for your assistant</span>
+<span class="tl"></span>
+<span class="tl tl-li">- At the start of a session, zeusi_startup hands it your standing rules, locks and current focus.</span>
+<span class="tl tl-li">- Before a task, zeusi_context_for_task pulls the notes, locks and decisions that apply.</span>
+<span class="tl tl-li">- Locks are binding: the assistant follows them instead of guessing.</span>
+<span class="tl tl-li">- Every answer cites its source.</span>
+<span class="tl tl-li">- A decision on record is not an approval.</span>
+<span class="tl"></span>
+<span class="tl tl-h">## Your own workspace</span>
+<span class="tl"></span>
+<span class="tl">This workspace is your own. It starts empty. You signed in with GitHub; no invite is needed, and another user's Zeusi sign-in cannot read it.</span>
+<span class="tl"></span>
+<span class="tl tl-h">## What I never store</span>
+<span class="tl"></span>
+<span class="tl">Secrets (passwords, API keys, tokens) or private client details.</span>
+<span class="tl"></span>
+<span class="tl">Want me to fill your memory now? I'll show a preview first.</span>
+<span class="tl">Say "fill my memory" and paste your notes, or point me at an export; nothing is saved until you say yes.</span>
+<span class="tl"></span>
+<span class="tl">Server: https://mcp.zeusi.dev/mcp</span></code></pre>
+        </div>
+        <button type="button" class="term-replay" hidden>Replay</button>
+      </figure>
+      <div class="actions">
+        <a class="btn btn-primary" href="#connect">Connect your AI</a>
+      </div>
+    </section>
+
+    <section id="connect" class="connect" aria-labelledby="connect-title">
+      <h2 id="connect-title">Connect your AI</h2>
+      <p class="lead">Zeusi works with any assistant that speaks MCP, the open standard for AI connectors. Paste one URL and sign in. Zeusi then asks your assistant to search it before answering, and to cite what it finds.</p>
+      <p>Zeusi is a shared memory for decisions, digs, parked items and locks, named after a cat. Through a connector, Zeusi reads your workspace. In a personal workspace it can also fill it: it writes only into that workspace, and only after you approve a preview.</p>
+
+      <div class="url-block">
+        <p class="url-label" id="url-label">Server URL</p>
+        <div class="url-field">
+          <code id="mcp-url" class="url">https://mcp.zeusi.dev/mcp</code>
+          <button type="button" class="copy copy-url" data-copy="mcp-url" hidden>Copy</button>
+        </div>
+      </div>
+      <p class="sr-only" id="copy-status" role="status" aria-live="polite"></p>
+
+      <h3 class="pick-title" id="pick-title">Pick your app</h3>
+      <div class="clients" data-tabs>
+        <div class="tablist" role="tablist" aria-labelledby="pick-title" hidden>
+          <button type="button" role="tab" id="tab-claude" aria-controls="panel-claude" aria-selected="true" tabindex="0"><span class="tab-name">Claude</span><span class="tab-kind">Web &amp; Desktop</span></button>
+          <button type="button" role="tab" id="tab-claude-code" aria-controls="panel-claude-code" aria-selected="false" tabindex="-1"><span class="tab-name">Claude Code</span><span class="tab-kind">Terminal</span></button>
+          <button type="button" role="tab" id="tab-chatgpt" aria-controls="panel-chatgpt" aria-selected="false" tabindex="-1"><span class="tab-name">ChatGPT</span><span class="tab-kind">Web</span></button>
+          <button type="button" role="tab" id="tab-cursor" aria-controls="panel-cursor" aria-selected="false" tabindex="-1"><span class="tab-name">Cursor</span><span class="tab-kind">Editor</span></button>
+          <button type="button" role="tab" id="tab-vscode" aria-controls="panel-vscode" aria-selected="false" tabindex="-1"><span class="tab-name">VS Code</span><span class="tab-kind">Editor</span></button>
+          <button type="button" role="tab" id="tab-gemini" aria-controls="panel-gemini" aria-selected="false" tabindex="-1"><span class="tab-name">Gemini CLI</span><span class="tab-kind">Terminal</span></button>
+          <button type="button" role="tab" id="tab-any" aria-controls="panel-any" aria-selected="false" tabindex="-1"><span class="tab-name">Any MCP client</span><span class="tab-kind">Standard</span></button>
+        </div>
+        <div class="panel" id="panel-claude" role="tabpanel" aria-labelledby="tab-claude" tabindex="0">
+          <h3 class="panel-title">Claude (web &amp; Desktop)</h3>
+          <ol class="steps">
+            <li>Go to <strong>Customize &gt; Connectors</strong>, click <strong>+ Add</strong>, then <strong>Add custom connector</strong>.</li>
+            <li>Name it <code>Zeusi</code>, paste the server URL <code>https://mcp.zeusi.dev/mcp</code> and click <strong>Continue</strong>.</li>
+            <li>Under <strong>Authentication</strong>, choose <strong>Sign in now</strong>. Under <strong>OAuth client</strong>, keep <strong>Use Claude&rsquo;s published identity (Recommended)</strong>, or pick <strong>Register automatically</strong>.</li>
+            <li>Click <strong>Add</strong>, then sign in.</li>
+          </ol>
+        </div>
+        <div class="panel" id="panel-claude-code" role="tabpanel" aria-labelledby="tab-claude-code" tabindex="0">
+          <h3 class="panel-title">Claude Code</h3>
+          <ol class="steps">
+            <li>Add Zeusi in your terminal:
+              <div class="code-block"><pre class="wrap"><code id="cmd-claude-code">claude mcp add --transport http zeusi https://mcp.zeusi.dev/mcp</code></pre><button type="button" class="copy" data-copy="cmd-claude-code" hidden>Copy</button></div>
+            </li>
+            <li>In a Claude Code session, run <code>/mcp</code> and sign in to <code>zeusi</code> (or run <code>claude mcp login zeusi</code>).</li>
+            <li>Sign in with GitHub and approve access.</li>
+          </ol>
+        </div>
+        <div class="panel" id="panel-chatgpt" role="tabpanel" aria-labelledby="tab-chatgpt" tabindex="0">
+          <h3 class="panel-title">ChatGPT</h3>
+          <ol class="steps">
+            <li>Open <strong>Plugins</strong>, click <strong>+</strong>, then <strong>Add custom MCP server</strong>.</li>
+            <li>Enter a name (<code>Zeusi</code>). Under <strong>Connection</strong>, paste the server URL. Under <strong>Authentication</strong>, choose <strong>OAuth</strong>.</li>
+            <li>Tick <strong>I understand and want to continue</strong>, then click <strong>Create as a plugin</strong>.</li>
+            <li>Install the plugin, sign in, and use it in a chat with <strong>@</strong>.</li>
+          </ol>
+        </div>
+        <div class="panel" id="panel-cursor" role="tabpanel" aria-labelledby="tab-cursor" tabindex="0">
+          <h3 class="panel-title">Cursor</h3>
+          <ol class="steps">
+            <li>Add Zeusi to <code>~/.cursor/mcp.json</code>:
+              <div class="code-block"><pre><code id="cmd-cursor">{
+  "mcpServers": {
+    "zeusi": {
+      "url": "https://mcp.zeusi.dev/mcp"
+    }
+  }
+}</code></pre><button type="button" class="copy" data-copy="cmd-cursor" hidden>Copy</button></div>
+            </li>
+            <li>Open <strong>Customize &gt; MCPs</strong>.</li>
+            <li>Follow the sign-in prompt for <code>zeusi</code>.</li>
+          </ol>
+        </div>
+        <div class="panel" id="panel-vscode" role="tabpanel" aria-labelledby="tab-vscode" tabindex="0">
+          <h3 class="panel-title">VS Code (GitHub Copilot)</h3>
+          <ol class="steps">
+            <li>Open the Command Palette and run <strong>MCP: Add Server</strong> (or <strong>Chat: Open Customizations</strong> &gt; <strong>MCP Servers</strong> &gt; <strong>Add Server</strong>).</li>
+            <li>Choose <strong>HTTP</strong> and paste the server URL.</li>
+            <li>Enter the server ID <code>zeusi</code> and choose <strong>Global</strong>.</li>
+            <li>Sign in when VS Code asks.</li>
+          </ol>
+        </div>
+        <div class="panel" id="panel-gemini" role="tabpanel" aria-labelledby="tab-gemini" tabindex="0">
+          <h3 class="panel-title">Gemini CLI</h3>
+          <ol class="steps">
+            <li>Add Zeusi in your terminal:
+              <div class="code-block"><pre class="wrap"><code id="cmd-gemini">gemini mcp add --transport http zeusi https://mcp.zeusi.dev/mcp</code></pre><button type="button" class="copy" data-copy="cmd-gemini" hidden>Copy</button></div>
+            </li>
+            <li>In Gemini CLI, sign in:
+              <div class="code-block"><pre><code id="cmd-gemini-auth">/mcp auth zeusi</code></pre><button type="button" class="copy" data-copy="cmd-gemini-auth" hidden>Copy</button></div>
+            </li>
+            <li>Sign in with GitHub and approve access.</li>
+          </ol>
+        </div>
+        <div class="panel" id="panel-any" role="tabpanel" aria-labelledby="tab-any" tabindex="0">
+          <h3 class="panel-title">Any MCP client</h3>
+          <ol class="steps">
+            <li>Add a remote server with the URL <code>https://mcp.zeusi.dev/mcp</code>, transport <strong>Streamable HTTP</strong>.</li>
+            <li>Choose <strong>OAuth</strong> sign-in (OAuth 2.1). Your client finds the Zeusi sign-in by itself.</li>
+            <li>No OAuth? Send the header <code>Authorization: Bearer $ZEUSI_READ_TOKEN</code>. Ask your Zeusi admin for a read token.</li>
+          </ol>
+        </div>
+      </div>
+
+      <h3>What happens when you sign in</h3>
+      <ol class="signin">
+        <li><strong>Sign in with GitHub.</strong> <span>Any GitHub account works. You get your own workspace. It is separate from everyone else&rsquo;s and starts empty.</span></li>
+        <li><strong>Zeusi shows which app is asking</strong> <span>and where access goes.</span></li>
+        <li><strong>You approve access once.</strong> <span>Zeusi can read your workspace. It writes into your own workspace only after you approve a preview. You never paste a token.</span></li>
+      </ol>
+
+      <h3>What you can ask</h3>
+      <ul class="prompts">
+        <li>&ldquo;What standing rules should I follow today?&rdquo;</li>
+        <li>&ldquo;What has been decided about promoting Northbank to prod?&rdquo;</li>
+        <li>&ldquo;What is currently locked or parked?&rdquo;</li>
+      </ul>
+    </section>
+
+    <section id="first-5-minutes" class="connect guide" aria-labelledby="guide-title">
+      <h2 id="guide-title">Your first 5 minutes</h2>
+      <ol class="guide-steps">
+        <li><strong>Add Zeusi to your AI app.</strong> <span>Add <code>https://mcp.zeusi.dev/mcp</code> as a connector. The steps for your app are under <a href="#connect">Connect your AI</a>.</span></li>
+        <li><strong>Sign in with GitHub and approve.</strong> <span>No invite needed. You get your own workspace. It starts empty, and another user&rsquo;s Zeusi sign-in cannot read it.</span></li>
+        <li><strong>Ask your assistant: &ldquo;Run zeusi_startup&rdquo;.</strong> <span>You see &ldquo;Hello, I&rsquo;m Zeusi&rdquo;. Zeusi tells you that your workspace is still empty.</span></li>
+        <li><strong>Ask: &ldquo;What can Zeusi do?&rdquo;</strong> <span>Your assistant reads <code>zeusi://about</code> and explains what Zeusi does for it.</span></li>
+        <li><strong>Fill your memory.</strong> <span>Say &ldquo;fill my memory&rdquo; and paste your notes, or point your assistant at an export. Zeusi shows a preview first, and nothing is saved until you say yes, once. If your assistant says it cannot write yet, reconnect the Zeusi connector once and approve access again. That gives write access to your own workspace. A nightly routine can keep it in sync. Never paste secrets (passwords, API keys, tokens) or private client details.</span>
+          <span>To make a rule, write it in a note: list it under <code>locks:</code> in the note&rsquo;s front matter, and mark it with <code>standing_locks: [1]</code> (the number of the lock). The import and the nightly sync both keep it, and Zeusi serves it at the start of every session. A decision-log entry becomes a decision only in this exact form. Anything else stays a searchable note, and the preview says why:</span>
+<pre><code>## 2026-11-18T10:00:00+01:00 me
+Decision: go
+Said-at-precision: minute
+
+Use preview first, then one explicit yes, for every import.</code></pre>
+          <span>Or as one JSONL line: <code>{"kind":"go","who":"me","said_at":"2026-11-18T10:00:00+01:00","said_at_precision":"minute","exact_words":"..."}</code>. Use <code>me</code> as the handle. That handle is your workspace&rsquo;s own person, so the entry is saved as a decision. An entry with another handle is saved as a searchable note. So is an entry in an older workspace that does not know <code>me</code> yet. The preview and the commit result tell you when this happens.</span></li>
+      </ol>
+    </section>
+
+    <section id="remembers" class="connect remembers" aria-labelledby="remembers-title">
+      <h2 id="remembers-title">What Zeusi remembers</h2>
+      <p class="lead">Zeusi keeps decisions, standing rules and the notes they come from. Each one keeps its source, so your assistant can cite it.</p>
+      <p class="example-flag">Example &mdash; not real data</p>
+      <ul class="cards">
+        <li class="card" data-reveal>
+          <p class="card-kind">Decision</p>
+          <p class="card-words">&ldquo;Use preview first, then one explicit yes, for every import.&rdquo;</p>
+          <dl class="card-fields">
+            <div><dt>kind</dt><dd><code>go</code></dd></div>
+            <div><dt>who</dt><dd><code>me</code></dd></div>
+            <div><dt>said_at</dt><dd><code>2026-11-18T10:00:00+01:00</code></dd></div>
+            <div><dt>source</dt><dd>the decision-log entry it came from (<code>source_uri</code>, <code>source_ts</code>)</dd></div>
+          </dl>
+        </li>
+        <li class="card" data-reveal>
+          <p class="card-kind">Lock (standing rule)</p>
+          <p class="card-words">&ldquo;Never deploy on a Friday.&rdquo;</p>
+          <dl class="card-fields">
+            <div><dt>origin</dt><dd><code>note_lock</code></dd></div>
+            <div><dt>id</dt><dd><code>hq:notes/2026-11-18-release-rules.md#lock-1</code></dd></div>
+            <div><dt>served</dt><dd>by <code>zeusi_startup</code> at every session start</dd></div>
+          </dl>
+        </li>
+        <li class="card" data-reveal>
+          <p class="card-kind">Source</p>
+          <p class="card-words">Release rules: &ldquo;Why: weekend cover is thin.&rdquo;</p>
+          <dl class="card-fields">
+            <div><dt>path</dt><dd><code>notes/2026-11-18-release-rules.md</code></dd></div>
+            <div><dt>source_uri</dt><dd><code>hq:notes/2026-11-18-release-rules.md</code></dd></div>
+            <div><dt>cite</dt><dd><code>&lt;source_uri&gt; @ &lt;source_ts&gt;</code></dd></div>
+          </dl>
+        </li>
+      </ul>
+    </section>
+
+    <section id="about" class="connect about" aria-labelledby="about-title">
+      <h2 id="about-title">What Zeusi is</h2>
+      <p>Zeusi is a shared memory for decisions, digs, parked items and locks, named after a cat. It is not tied to one AI model. Every item keeps its source, so Claude, Grok, Cursor or any other assistant can show where an answer came from. Zeusi is read-only by default, and it never makes up a decision.</p>
+
+      <h3>Zeusi speaks up first</h3>
+      <p>Before your assistant starts a task, it can ask Zeusi what applies: past decisions, locks and parked items, each with its source, and any conflicts between them. If nothing applies, Zeusi says so.</p>
+      <p><strong>A Zeusi decision is context, not permission.</strong> Decisions and locks returned by Zeusi are cited context for your assistant; they are not an approval or a GO to act now. Your assistant still needs your current, explicit approval for anything that needs one.</p>
+      <p class="note">A connector cannot force a model to call a tool or run a script. Zeusi asks your assistant to check first, and offers a ready-made <strong>start-task</strong> prompt. Your assistant decides whether to follow it.</p>
+
+      <h3>First run: an empty Zeusi</h3>
+      <p>If your assistant finds your personal workspace empty, it can offer to fill it, with a preview first (step 5 of <a href="#first-5-minutes">Your first 5 minutes</a>). In a Zeusi you run yourself, it can offer the ready-made <strong>onboarding</strong> prompt instead. There you import your history yourself, on your own computer, with the zeusi command-line tool. It always starts with a dry run, which only counts what would be added and writes nothing: <code>zeusi onboard --markdown &lt;notes-folder&gt; --scope work</code>. Run the import command it prints only after you have checked those counts.</p>
+      <p class="note">In a Zeusi you run yourself, your assistant cannot run the import for you, and a connector cannot force a model to run anything. The import filters out passwords, tokens and sign-in codes. Names, emails and phone numbers are not filtered out, so check your files first.</p>
+
+      <h3>What not to put in it</h3>
+      <p>Never put passwords, access tokens, sign-in codes or private client details in Zeusi.</p>
+      <p class="note">Your workspace is kept apart from other users: another user&rsquo;s Zeusi sign-in cannot read it. Your memory is encrypted. Only you hold the key. It is not hidden from the people who run Zeusi while you are signed in: the Zeusi server then decrypts your memory to answer your assistant. Whoever holds the admin database login can see that your workspace exists, how many items it holds, how large they are and when it changes. Your workspace is not end-to-end encrypted.</p>
+    </section>
+  </main>
+  <footer class="site-footer">
+    <p>Zeusi is run by Sovra GmbH, Cham, Switzerland.</p>
+    <nav aria-label="Legal">
+      <a href="/privacy">Privacy</a>
+      <a href="/terms">Terms</a>
+      <a href="/security">Security</a>
+    </nav>
+  </footer>
+</body>
+</html>

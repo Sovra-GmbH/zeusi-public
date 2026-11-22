@@ -1,0 +1,29 @@
+# b15f177 (#14): the replacements it added (fingerprinting helpers from test/redact.ts)
+  assertSecretEqual((calls[0]!.init.headers as Record<string, string>)['Authorization'], `Bearer ${KEY}`, 'Authorization header');
+  assertSecretEqual(await readRolePassword('zeusi_box_decision', key), PW, 'decision password from PGPASSFILE');
+  await assertRejectsRedacted(readRolePassword('zeusi_box_rw', key), (e) => /No password for role zeusi_box_rw/.test(e.message), [PW]);
+  await assertRejectsRedacted(readRolePassword('zeusi_box_decision', key), (e) => /must be mode 0600/.test(e.message), [PW]);
+  assertSecretEqual(seen.password, PW, 'decision login password');
+    assertSecretEqual(parsed?.secret, g.secret, 'parsed secret');
+  assertSecretEqual(p?.secret, secret, 'secret with "_"');
+export function assertSecretEqual(actual: unknown, expected: string, label = 'secret'): void {
+/** Element-wise assertSecretEqual for a list of credentials (e.g. passwords a fake client saw). */
+export function assertSecretsEqual(actual: readonly unknown[], expected: readonly string[], label = 'secrets'): void {
+export async function assertRejectsRedacted(
+/** Synchronous twin of assertRejectsRedacted (for assert.throws with a validation function). */
+export function assertThrowsRedacted(fn: () => unknown, check: (e: Error) => boolean, secrets: readonly string[], label = 'throw'): void {
+  assertSecretsEqual(seen, [ENV_PW], 'env password used for zeusi_box_ro');
+  assertSecretsEqual(seen, [KC_PW], 'Keychain password');
+  assertSecretEqual(seen.at(-1), `${KC_PW}-file`, 'an empty env var is ignored');
+    assertSecretsEqual(seen, [KC_PW], `${user} ignores every env password`);
+    await assertRejectsRedacted(connectService(service, { env, home, runSecurity: noKeychain, pgClient: failing(seen) }),
+  assertSecretsEqual(seen, [KC_PW], 'Keychain password');
+    await assertRejectsRedacted(
+    assertSecretEqual(cfg.password, pw, `${user} password source`);
+  assertSecretEqual(log.configs[0]!.password, KC_PW, 'Keychain password');
+  await assertRejectsRedacted(
+  assertThrowsRedacted(() => resolveService('zeusi_ingest', { env: { PGSERVICEFILE: f } }),
+  assertThrowsRedacted(() => resolveService('zeusi_rw', { env: { PGSERVICEFILE: f } }),
+  assertSecretEqual(pw, SECRET, 'Keychain password');
+  await assertRejectsRedacted(readRolePassword('zeusi_mini_backup', { platform: 'darwin', runSecurity: leaky, home: '/nonexistent' }),
+  assertSecretEqual(pw, SECRET, '~/.pgpass password');

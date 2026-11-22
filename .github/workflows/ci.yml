@@ -1,0 +1,44 @@
+# One command, local == CI: this job only sets up the machine and runs `npm run check`, the same
+# command a contributor runs locally (scripts/check.ts: typecheck, build, hermetic tests, gitleaks
+# history scan, repo guards). No secrets, no deploy, read-only token.
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# A newer push to a PR supersedes the older run; a run on main always completes, so every main commit
+# gets a finished run. On push the guards diff the allowlist against github.event.before (read from the
+# event payload by scripts/guards/run.ts), so a multi-commit push is checked as one range.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # gitleaks scans the whole history; guards diff the allowlist against the base
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: package.json # engines.node
+      - name: Install gitleaks 8.30.1 (pinned release, sha256-verified)
+        env:
+          GITLEAKS_VERSION: 8.30.1
+          GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+        run: |
+          set -eu
+          curl -fsSL -o "$RUNNER_TEMP/gitleaks.tgz" "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          echo "${GITLEAKS_SHA256}  $RUNNER_TEMP/gitleaks.tgz" | sha256sum -c -
+          sudo tar -xzf "$RUNNER_TEMP/gitleaks.tgz" -C /usr/local/bin gitleaks
+          gitleaks version
+      - run: npm ci
+      - run: npm run check

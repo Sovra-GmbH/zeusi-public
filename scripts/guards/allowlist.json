@@ -1,0 +1,4 @@
+{
+  "comment": "Lines that already broke a guard rule when the guard landed. This list may only shrink: scripts/guards/run.ts fails on an entry that matches nothing or that the base revision did not have. New code fixes the line or carries an inline correct-allow with a human approval (see AGENTS.md).",
+  "entries": []
+}

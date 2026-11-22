@@ -1,0 +1,25 @@
+# Never send secrets or local state into the image build context.
+.env
+.env*
+*.pgpass
+.pgpass
+.pg_service.conf
+config/sources.toml
+node_modules
+dist
+.git
+.github
+test
+docs
+skills
+*.token
+mcp-tokens.json
+
+# The public site (and its film) is deployed on Vercel. Only favicon.svg and logo-512.png
+# are copied into this image (Dockerfile); keep the rest out of the build context.
+site/assets
+site/*.html
+site/*.js
+site/*.css
+site/*.md
+site/logo.svg

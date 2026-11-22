@@ -1,0 +1,4 @@
+# 17564c7:test/hq-sync-import.test.ts: the same three sites after #12 (safeMkdtemp)
+  const dir = safeMkdtemp(join(tmpdir(), 'zeusi-hq-'));
+  const root = safeMkdtemp(join(tmpdir(), 'zeusi-hq-cfg-'));
+  const dir = safeMkdtemp(join(tmpdir(), 'zeusi-hq-cli-'));

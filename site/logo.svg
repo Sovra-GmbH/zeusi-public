@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-2 0 194 62" width="194" height="62" color="#4f5d42" role="img" aria-labelledby="zeusi-logo-title">
+  <title id="zeusi-logo-title">zeusi</title>
+  <!-- Wordmark redrawn as strokes from the light mockup: lowercase "zeusi" with a cat-ear mark in place of the tittle.
+       Strokes use currentColor. As a standalone file it defaults to forest green (#4f5d42) for light surfaces;
+       index.html inlines the same paths without this default so the hero can colour it cream (#fef7ed). -->
+  <g fill="none" stroke="currentColor">
+    <path stroke-width="9.5" d="M0.5 24.75H32L1.5 55.25H33M42.75 40H74.25A15.75 15.25 0 1 0 70.2 50.2M88.75 20V40A15.25 15.25 0 0 0 119.25 40M119.25 20V60M156.55 27.68A12.75 7.63 0 1 0 146.5 40A12.75 7.63 0 1 1 136.45 52.32M173.75 20V60"/>
+    <path stroke-width="3" stroke-linecap="round" stroke-linejoin="round" d="M161.75 15C160.15 10 161.15 5 163.75 1.8C166.25 4.6 168.75 6.6 170.55 7.3Q173.75 8.2 176.95 7.3C178.75 6.6 181.25 4.6 183.75 1.8C186.35 5 187.35 10 185.75 15"/>
+  </g>
+</svg>

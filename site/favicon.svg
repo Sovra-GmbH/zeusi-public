@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- The "i" with the cat-ear mark from the zeusi wordmark, cream on the hero navy. -->
+  <rect width="64" height="64" rx="14" fill="#10141d"/>
+  <g fill="none" stroke="#fef7ed">
+    <path stroke-width="9" d="M32 31V54"/>
+    <path stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" transform="translate(32 9) scale(1.25) translate(-173.75 0)" d="M161.75 15C160.15 10 161.15 5 163.75 1.8C166.25 4.6 168.75 6.6 170.55 7.3Q173.75 8.2 176.95 7.3C178.75 6.6 181.25 4.6 183.75 1.8C186.35 5 187.35 10 185.75 15"/>
+  </g>
+</svg>

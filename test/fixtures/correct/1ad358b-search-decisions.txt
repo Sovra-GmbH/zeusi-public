@@ -1,0 +1,2 @@
+# 1ad358b:test/search-decisions.test.ts: the fix
+  home = safeMkdtemp(join(tmpdir(), 'zeusi-search-dec-'));

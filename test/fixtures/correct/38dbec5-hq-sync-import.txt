@@ -1,0 +1,4 @@
+# 38dbec5:test/hq-sync-import.test.ts lines 65, 295, 411 (before #12 / 17564c7): raw mkdtemp, random suffix could spell a walled term
+  const dir = mkdtempSync(join(tmpdir(), 'zeusi-hq-'));
+  const root = mkdtempSync(join(tmpdir(), 'zeusi-hq-cfg-'));
+  const dir = mkdtempSync(join(tmpdir(), 'zeusi-hq-cli-'));
