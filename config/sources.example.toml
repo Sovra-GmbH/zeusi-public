@@ -6,13 +6,12 @@
 # (zeusi.wall_denylist) and in src/wall.ts. `loadSources()` refuses a walled path or repo
 # at load time. Each source sets its scope: work (default), product or client.
 
-# Protected names (docs/wall.md "Protected names"): people or companies whose content
-# Zeusi must never hold. Keep the real list ONLY in your private config/sources.toml.
-# Any string in this file that mentions one is refused, and `zeusi wall seed-sql`
-# prints the owner SQL that adds their hard rules to the database. The fictional
-# The built-in example name in this repo is always protected and needs no entry.
-[wall]
-protected_names = []
+# Protected names are hard rules in zeusi.wall_denylist, and only the owner writes that
+# table (docs/wall.md, "Three layers"). There is no list of them in this file: keep them
+# out of it. Any string in this file that mentions the built-in example name, in any of
+# the spellings mentionsProtectedName() in src/sources.ts checks, is refused at load time.
+# After an ingest, `zeusi wall report` lists what the wall held back (no content) and
+# `zeusi wall audit` checks that no stored row breaks the live wall.
 
 [[source]]
 name = "vault-work"

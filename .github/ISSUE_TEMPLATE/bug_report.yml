@@ -1,0 +1,53 @@
+name: Bug report
+description: Something in Zeusi does not work as documented.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. **Security problem?** Do not file it here: write to hello@sovra.ch (see SECURITY.md).
+        Never paste tokens, passwords, connection strings or private notes into this issue.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you saw, and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Run `npm start -- ...`
+        2. ...
+    validations:
+      required: true
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where
+      options:
+        - CLI (self-hosted)
+        - MCP server, local stdio
+        - MCP server, hosted (mcp.zeusi.dev)
+        - Site (zeusi.ai)
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: client
+    attributes:
+      label: MCP client
+      placeholder: e.g. Grok Bot, Claude Code, Cursor
+  - type: input
+    id: version
+    attributes:
+      label: Commit and Node.js version
+      placeholder: e.g. 794b49e, Node 22.18
+  - type: textarea
+    id: logs
+    attributes:
+      label: Output
+      description: Error output, with any secrets removed.
+      render: text
