@@ -41,7 +41,11 @@ Every row carries its source: `source_uri`, `source_ts`, a content hash and the 
 Any [MCP](https://modelcontextprotocol.io) client can use it: Grok Bot, Claude, Cursor, ChatGPT, VS Code, Gemini CLI and more. Use the hosted server, or run your own.
 
 > [!NOTE]
-> **Your memory is encrypted. Only you hold the key.** On the hosted service, new personal workspaces are encrypted from sign-up (self-hosted: set `ZEUSI_WORKSPACE_ENCRYPTION=on`). Your workspace is not end-to-end encrypted: the server unlocks it while you are signed in, to answer your assistant. Details on [zeusi.ai/security](https://zeusi.ai/security).
+> Your memory is encrypted. Only you hold the key. It is not hidden from the people who run Zeusi while you are signed in: the Zeusi server then decrypts your memory to answer your assistant. Whoever holds the admin database login can see that your workspace exists, how many items it holds, how large they are and when it changes.
+>
+> Your workspace is not end-to-end encrypted.
+>
+> Details: [zeusi.ai/security](https://zeusi.ai/security). On your own server, workspace keys are off by default; the `ZEUSI_WORKSPACE_ENCRYPTION` setting turns them on with `enroll` or `on` ([`src/workspace-keys.ts`](src/workspace-keys.ts)).
 
 > [!IMPORTANT]
 > A Zeusi decision is context, not permission. Decisions and locks returned by Zeusi are cited context for the assistant; they are not an approval or a GO to act now. Anything that needs the owner's approval still needs the owner's current, explicit approval.
@@ -53,10 +57,10 @@ Any [MCP](https://modelcontextprotocol.io) client can use it: Grok Bot, Claude, 
 - 🎯 **Context for the task at hand.** `zeusi_context_for_task` (alias `prime`) returns the decisions and locks that apply to a task, and flags conflicts between them. ([`src/context-for-task.ts`](src/context-for-task.ts))
 - 🔎 **Hybrid search.** Vector plus full-text search. Without an embeddings key it falls back to lexical search and says so. ([`src/search.ts`](src/search.ts))
 - 🗣️ **Decisions with the exact words.** Each decision keeps who said it and what they said. Changes go through supersede functions, not edits, with views for the current state. ([`src/decisions.ts`](src/decisions.ts))
-- 🧱 **A wall in the database.** A trigger on every content table runs the same verdict as the importers, including protected names in any spelling. Blocked items are quarantined by uri and hash only. ([`docs/wall.md`](docs/wall.md))
+- 🧱 **A wall in the database.** A trigger on every content table runs the same verdict as the importers, including protected names and many look-alike spellings of them (known limits in [`docs/wall.md`](docs/wall.md#parity-limits-wallts-vs-sql)). A blocked item is quarantined by uri and hash only. ([`docs/wall.md`](docs/wall.md))
 - 🛡️ **Checked on the way out.** Every item an assistant gets passes an output wall and a secret check first. An item goes out whole or not at all. ([`src/mcp-wall.ts`](src/mcp-wall.ts))
 - 👀 **Preview first, always.** `zeusi onboard` reads markdown or Obsidian notes, decision logs, Claude and ChatGPT exports and git repos, shows what it would import, and never writes. ([`src/importers/onboard.ts`](src/importers/onboard.ts))
-- 🔐 **Sign in with GitHub.** The hosted server uses OAuth 2.1 with PKCE. Each GitHub account gets its own personal workspace. Sign-in tokens get the read tools; writing into your own workspace needs a separate yes on the consent screen. ([`docs/hosting.md`](docs/hosting.md))
+- 🔐 **Sign in with GitHub.** The hosted server uses OAuth 2.1 with PKCE. Operator team members reach the team workspace; every other GitHub account gets its own personal workspace. Sign-in is read-only. The one exception: when the server has workspace writes on, a personal workspace's sign-in can also save into that same workspace, and only after a preview and your yes. Team sign-ins stay read-only. ([`src/mcp-oauth.ts`](src/mcp-oauth.ts))
 - 🧑‍⚖️ **Least-privilege roles.** SQL creates the logins with no passwords: ingest, backup, read-only for agents and a narrow decision writer. ([`docs/roles.md`](docs/roles.md))
 - 💸 **A hard spend cap on embeddings.** Embedding runs stop at a monthly cap and reuse vectors for unchanged text. ([`docs/embeddings.md`](docs/embeddings.md))
 
@@ -80,7 +84,7 @@ Your assistant calls `zeusi_startup` at the start of a session, `zeusi_context_f
 
 ### Option 1: Use the hosted server
 
-Point your MCP client at **`https://mcp.zeusi.dev/mcp`** (Streamable HTTP) and sign in with GitHub. A new account gets its own personal workspace, empty at first.
+Point your MCP client at **`https://mcp.zeusi.dev/mcp`** (Streamable HTTP) and sign in with GitHub. Unless you are on the operator's team, your GitHub account gets its own personal workspace, empty at first.
 
 <details open>
 <summary><b>Grok Bot</b></summary>
@@ -133,7 +137,7 @@ See [`docs/mcp.md`](docs/mcp.md#startup-snippets) for the steps for each client.
 
 ### Option 2: Run your own
 
-Requirements: **Node.js 22.18+** and **PostgreSQL 17+** with the `vector` extension (Neon works out of the box; any Postgres with pgvector works).
+Requirements: **Node.js 22.18+** and **PostgreSQL 16+** with the `vector` extension (Neon works out of the box; any Postgres with pgvector works).
 
 ```sh
 git clone https://github.com/Sovra-GmbH/zeusi-public.git zeusi && cd zeusi
@@ -148,6 +152,7 @@ npm ci && npm run build && npm test     # tests run on PGlite, no database neede
    npm start -- migrate --dry-run
    npm start -- migrate
    ```
+   Once a database has applied migrations, take a snapshot first and add `--i-took-a-snapshot`.
 3. **Set role passwords and the service file.** The migrations create login roles without passwords. Set them as the owner, then copy [`config/pg_service.example.conf`](config/pg_service.example.conf) to `~/.pg_service.conf`. Check with `npm start -- doctor`. See [`docs/roles.md`](docs/roles.md).
 4. **Preview your import.** `onboard` is always a dry run: no database connection, nothing written. It prints the counts and the exact command to run next.
    ```sh
@@ -165,7 +170,7 @@ npm ci && npm run build && npm test     # tests run on PGlite, no database neede
    ```
    or `claude mcp add zeusi -- node /path/to/zeusi/dist/mcp.js`.
 
-**Optional: a markdown vault and protected names.** Copy [`config/sources.example.toml`](config/sources.example.toml) to `config/sources.toml` (gitignored), point it at your vault and list the people or companies that must stay out under `[wall] protected_names`. Apply their rules as the owner with `node dist/cli.js wall seed-sql`, then run `npm start -- ingest vault --dry-run` before `--real`. Never commit the names. See [`docs/wall.md`](docs/wall.md).
+**Optional: a markdown vault.** Copy [`config/sources.example.toml`](config/sources.example.toml) to `config/sources.toml` (gitignored) and point it at your vault. Run `npm start -- ingest vault --dry-run` (counts only) before `--real`. Then `npm start -- wall report` lists what the wall held back (no content) and `npm start -- wall audit` checks that no stored row breaks it. See [`docs/wall.md`](docs/wall.md).
 
 To run your own hosted server, use `node dist/mcp.js --hosted`. It fails closed until a valid tokens file exists. See [`docs/hosting.md`](docs/hosting.md).
 
@@ -193,13 +198,13 @@ Short aliases: `startup`, `search`, `log_decision`, `context_for_task` / `prime`
 | Command | What it does |
 |---|---|
 | `doctor`, `doctor --roles`, `doctor --offline` | TLS, channel binding, server version, pgvector, migrations and role checks. Prints no hosts or credentials. |
-| `migrate [--dry-run]` | Apply `migrations/NNNN_*.sql` in order, one transaction each. Refuses edited files. |
+| `migrate [--dry-run] [--i-took-a-snapshot]` | Apply `migrations/NNNN_*.sql` in order, one transaction each. Refuses an applied file whose contents changed. Needs `--i-took-a-snapshot` once any migration is applied. |
 | `onboard <inputs> --scope <s>` | First run. Always a dry run: prints the preview and the import command to run next. |
 | `import <inputs> --scope <s> [--real]` | Import markdown, decision logs, Claude or ChatGPT exports and git repos through the wall. |
 | `ingest vault (--dry-run \| --real)` | Import the configured vault notes through both wall gates. |
 | `embed (--estimate \| --dry-run \| --real)` | Cost estimate, or embed pending chunks under a hard monthly cap. |
 | `search "<q>" [--hybrid] [--json]` | Search as a read-only role; every hit cites `source_uri` and `source_ts`. |
-| `wall report`, `wall audit`, `wall seed-sql` | Quarantined items (no content), rows that break the wall, owner SQL for protected names. |
+| `wall report`, `wall audit`, `wall allow <uri> <sha256>` | Quarantined items (no content); rows that break the live wall; owner-only: let one exact item past a soft content rule. |
 | `mcp-token mint\|list\|revoke` | Offline token admin for the hosted MCP server. |
 
 ## Site
@@ -209,7 +214,7 @@ The public site is live at [https://zeusi.ai](https://zeusi.ai). It is deployed 
 ## Project layout
 
 ```text
-src/            CLI, MCP server, importers, wall, search, encryption and OAuth
+src/            CLI, MCP server, importers, wall, search, workspace keys and OAuth
 migrations/     Postgres schema, roles, row-level security and the wall, in order
 skills/         The zeusi-startup agent skill (copy as-is into any client)
 docs/           MCP, hosting, roles, wall, embeddings and more
