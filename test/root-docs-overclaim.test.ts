@@ -44,8 +44,14 @@ const namedWallSubs = (t: string) => [...t.matchAll(WALL_SUB)].map((m) => m[1]!)
 const CONFIG_EXAMPLES = readdirSync(`${ROOT}config`).filter((f) => f.endsWith('.example.toml')).map((f) => `config/${f}`);
 
 test('root docs: every `wall <sub>` the README and config/*.example.toml name is a real CLI subcommand', () => {
+  // Only the subcommands inside `case 'wall'` count: `mcp-token mint` or `workspaces delete` is not a wall subcommand.
   const cli = read('src/cli.ts');
-  const real = new Set([...cli.matchAll(/sub === '([a-z-]+)'/g)].map((m) => m[1]));
+  const start = cli.indexOf("case 'wall': {");
+  assert.ok(start >= 0, "src/cli.ts has case 'wall'");
+  const next = cli.slice(start + 1).search(/\n {4}case '/);
+  const wallCase = next < 0 ? cli.slice(start) : cli.slice(start, start + 1 + next);
+  const real = new Set([...wallCase.matchAll(/sub === '([a-z-]+)'/g)].map((m) => m[1]));
+  assert.ok(real.has('report') && !['mint', 'list', 'revoke', 'delete'].some((x) => real.has(x)), 'only the wall case is read');
   assert.ok(namedWallSubs(read('README.md')).length > 0, 'the README names wall subcommands');
   assert.ok(CONFIG_EXAMPLES.includes('config/sources.example.toml'), 'the sources example is scanned');
   for (const f of ['README.md', ...CONFIG_EXAMPLES]) {

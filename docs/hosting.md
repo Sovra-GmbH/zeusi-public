@@ -121,7 +121,7 @@ One server setting, `ZEUSI_WORKSPACE_ENCRYPTION`, turns workspace keys on for pe
 |---|---|
 | unset, empty or `off` | The default. No workspace keys. Personal workspaces are provisioned as before. |
 | `enroll` | The consent page offers key setup for a personal workspace (a passkey, plus a recovery code shown once). Only the key is set up: the content of an existing workspace stays as it is (`src/mcp-oauth-views.ts`). |
-| `on` | Everything `enroll` does, and a NEW personal workspace is provisioned with its content columns sealed from the start (`src/mcp.ts` `tenantSignupSetup`, `src/tenants.ts`). |
+| `on` | A NEW personal workspace is provisioned with its content columns sealed from the start (`src/mcp.ts` `tenantSignupSetup`, `src/tenants.ts`). On its first sign-in the consent page requires key setup before Approve: a passkey, plus a recovery code shown once (`src/mcp-oauth.ts`, `required`). An EXISTING personal workspace only gets the same optional offer as under `enroll`, and its content stays as it is. |
 
 Any other value is treated as `off`, with one log line that names the setting and never its value. The setting does not change the team workspace. `fly.toml` does not set it.
 
@@ -138,6 +138,6 @@ Scale the machine to 0 (`fly scale count 0`) or destroy the app, remove the DNS 
 
 ## OAuth for MCP clients
 
-The hosted server can offer OAuth for MCP clients (including claude.ai custom connectors). Discovery lives at `/.well-known/oauth-protected-resource` and `/.well-known/oauth-authorization-server`. GitHub is only the identity check: Zeusi asks for `read:user` and `user:email`, reads the login and verified emails once, and drops the GitHub token. Set `ZEUSI_GITHUB_CLIENT_ID`, `ZEUSI_GITHUB_CLIENT_SECRET` and `ZEUSI_OAUTH_SIGNING_KEY` on the host (never in the repo or `fly.toml`). The GitHub callback is `https://mcp.zeusi.dev/oauth/github/callback` on the official host, or `https://<your-host>/oauth/github/callback` on your own. Official clients use `https://claude.ai/api/mcp/auth_callback`. PKCE is S256. Revoke with `zeusi mcp-oauth revoke`. OAuth sign-in is read-only, always.
+The hosted server can offer OAuth for MCP clients (including claude.ai custom connectors). Discovery lives at `/.well-known/oauth-protected-resource` and `/.well-known/oauth-authorization-server`. GitHub is only the identity check: Zeusi asks for `read:user` and `user:email`, reads the login and verified emails once, and drops the GitHub token. Set `ZEUSI_GITHUB_CLIENT_ID`, `ZEUSI_GITHUB_CLIENT_SECRET` and `ZEUSI_OAUTH_SIGNING_KEY` on the host (never in the repo or `fly.toml`). The GitHub callback is `https://mcp.zeusi.dev/oauth/github/callback` on the official host, or `https://<your-host>/oauth/github/callback` on your own. Official clients use `https://claude.ai/api/mcp/auth_callback`. PKCE is S256. Revoke with `zeusi mcp-oauth revoke`. OAuth sign-in is read-only, with one exception: when this server has workspace writes on, a personal workspace's grant can also write into that same workspace (an import only after a preview and the user's yes; a nightly sync the user set up). Team grants stay read-only.
 
 Operator membership (who reaches the shared team workspace, rather than a new personal workspace) is configured with `ZEUSI_OPERATOR_GITHUB_LOGINS` and `ZEUSI_OPERATOR_EMAILS`. The values in this repo are examples only.

@@ -60,7 +60,7 @@ Any [MCP](https://modelcontextprotocol.io) client can use it: Grok Bot, Claude, 
 - 🧱 **A wall in the database.** A trigger on every content table runs the same verdict as the importers, including protected names and many look-alike spellings of them (known limits in [`docs/wall.md`](docs/wall.md#parity-limits-wallts-vs-sql)). A blocked item is quarantined by uri and hash only. ([`docs/wall.md`](docs/wall.md))
 - 🛡️ **Checked on the way out.** Every item an assistant gets passes an output wall and a secret check first. An item goes out whole or not at all. ([`src/mcp-wall.ts`](src/mcp-wall.ts))
 - 👀 **Preview first, always.** `zeusi onboard` reads markdown or Obsidian notes, decision logs, Claude and ChatGPT exports and git repos, shows what it would import, and never writes. ([`src/importers/onboard.ts`](src/importers/onboard.ts))
-- 🔐 **Sign in with GitHub.** The hosted server uses OAuth 2.1 with PKCE. Operator team members reach the team workspace; every other GitHub account gets its own personal workspace. Sign-in is read-only. The one exception: when the server has workspace writes on, a personal workspace's sign-in can also save into that same workspace, and only after a preview and your yes. Team sign-ins stay read-only. ([`src/mcp-oauth.ts`](src/mcp-oauth.ts))
+- 🔐 **Sign in with GitHub.** The hosted server uses OAuth 2.1 with PKCE. Operator team members reach the team workspace; every other GitHub account gets its own personal workspace. Sign-in is read-only. The one exception: when the server has workspace writes on, a personal workspace's sign-in can also write into that same workspace: an import saves only after a preview and your yes, and a nightly sync you set up adds, updates and removes notes. Team sign-ins stay read-only. ([`src/mcp-oauth.ts`](src/mcp-oauth.ts))
 - 🧑‍⚖️ **Least-privilege roles.** SQL creates the logins with no passwords: ingest, backup, read-only for agents and a narrow decision writer. ([`docs/roles.md`](docs/roles.md))
 - 💸 **A hard spend cap on embeddings.** Embedding runs stop at a monthly cap and reuse vectors for unchanged text. ([`docs/embeddings.md`](docs/embeddings.md))
 
@@ -187,7 +187,8 @@ To run your own hosted server, use `node dist/mcp.js --hosted`. It fails closed 
 | `zeusi_search_feedback` | Say whether a search or context result answered the question. |
 | `zeusi_onboarding_status` | Is Zeusi empty for this connection? Counts only, and what to run next. |
 | `zeusi_log_decision` | Opt-in: record a decision with who said it and the exact words. |
-| `zeusi_import_preview` / `zeusi_import_commit` / `zeusi_sync_batch` | Personal workspaces with write access: fill your memory, preview first. |
+| `zeusi_import_preview` / `zeusi_import_commit` | Personal workspaces with write access: fill your memory. The preview saves nothing; the commit saves exactly that preview, once, after your yes. |
+| `zeusi_sync_batch` | Personal workspaces with write access: the nightly sync you set up. Adds, updates and removes the listed notes of your own workspace in one batch, with no preview step. |
 
 Short aliases: `startup`, `search`, `log_decision`, `context_for_task` / `prime`. Full reference: [`docs/mcp.md`](docs/mcp.md).
 
