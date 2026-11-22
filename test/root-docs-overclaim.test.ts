@@ -38,10 +38,28 @@ test('root docs: the README keeps the security-page bundle word for word, and no
   assert.doesNotMatch(r, /encrypted from sign-up|New personal workspaces are encrypted|born encrypted|unlocks it/i);
 });
 
-test('root docs: every `wall <sub>` the README names is a real CLI subcommand', () => {
+// A `wall <sub>` named in copy: in a code span, or after `zeusi `, `dist/cli.js ` or `npm start -- `.
+const WALL_SUB = /(?:`|\bzeusi |dist\/cli\.js |npm start -- )wall ([a-z][a-z-]*)/g;
+const namedWallSubs = (t: string) => [...t.matchAll(WALL_SUB)].map((m) => m[1]!);
+const CONFIG_EXAMPLES = readdirSync(`${ROOT}config`).filter((f) => f.endsWith('.example.toml')).map((f) => `config/${f}`);
+
+test('root docs: every `wall <sub>` the README and config/*.example.toml name is a real CLI subcommand', () => {
   const cli = read('src/cli.ts');
   const real = new Set([...cli.matchAll(/sub === '([a-z-]+)'/g)].map((m) => m[1]));
-  const named = [...read('README.md').matchAll(/`(?:npm start -- |node dist\/cli\.js )?wall ([a-z][a-z-]*)/g)].map((m) => m[1]!);
-  assert.ok(named.length > 0, 'the README names wall subcommands');
-  for (const n of named) assert.ok(real.has(n), `wall ${n} is not a CLI subcommand`);
+  assert.ok(namedWallSubs(read('README.md')).length > 0, 'the README names wall subcommands');
+  assert.ok(CONFIG_EXAMPLES.includes('config/sources.example.toml'), 'the sources example is scanned');
+  for (const f of ['README.md', ...CONFIG_EXAMPLES]) {
+    for (const n of namedWallSubs(read(f))) assert.ok(real.has(n), `${f}: wall ${n} is not a CLI subcommand`);
+  }
+});
+
+test('root docs: the workspace-keys section in docs/hosting.md stays within the over-claim bundle', () => {
+  const h = read('docs/hosting.md');
+  const start = h.indexOf('## Workspace keys');
+  assert.ok(start >= 0, 'the section exists (the README links it)');
+  const end = h.indexOf('\n## ', start + 3);
+  const sec = h.slice(start, end < 0 ? undefined : end).replace(/ZEUSI_WORKSPACE_ENCRYPTION/g, 'the setting');
+  assert.deepEqual(siteOverclaims(plain(sec)), [], 'docs/hosting.md workspace keys');
+  for (const x of [OWNER_ENCRYPTION_LINE, SIGNED_IN_SENTENCE, ADMIN_LOGIN_SENTENCE, 'Your workspace is not end-to-end encrypted.']) assert.ok(sec.includes(x), x);
+  assert.match(read('README.md'), /docs\/hosting\.md#workspace-keys\)/);
 });

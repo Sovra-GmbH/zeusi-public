@@ -113,6 +113,24 @@ In every refused case the entrypoint also unsets `ZEUSI_MCP_WRITE_SERVICE` befor
 
 Tests: `test/fly-entrypoint.test.ts` (the entrypoint under `sh` and `dash` with fake `mountpoint` / `chown` / `setpriv`), `test/hosted-write-service.test.ts` (`PGPASSFILE`, startup preflight), `test/mcp-hosted.test.ts` (read token refused with the write service on; the write token reaches the write gate).
 
+## Workspace keys
+
+One server setting, `ZEUSI_WORKSPACE_ENCRYPTION`, turns workspace keys on for personal workspaces. Code: `src/workspace-keys.ts`. Only three values are understood:
+
+| Value | What the server does |
+|---|---|
+| unset, empty or `off` | The default. No workspace keys. Personal workspaces are provisioned as before. |
+| `enroll` | The consent page offers key setup for a personal workspace (a passkey, plus a recovery code shown once). Only the key is set up: the content of an existing workspace stays as it is (`src/mcp-oauth-views.ts`). |
+| `on` | Everything `enroll` does, and a NEW personal workspace is provisioned with its content columns sealed from the start (`src/mcp.ts` `tenantSignupSetup`, `src/tenants.ts`). |
+
+Any other value is treated as `off`, with one log line that names the setting and never its value. The setting does not change the team workspace. `fly.toml` does not set it.
+
+For a personal workspace provisioned with `on`, the user-facing wording is exactly the wording of the security page, and nothing more:
+
+Your memory is encrypted. Only you hold the key. It is not hidden from the people who run Zeusi while you are signed in: the Zeusi server then decrypts your memory to answer your assistant. Whoever holds the admin database login can see that your workspace exists, how many items it holds, how large they are and when it changes.
+
+Your workspace is not end-to-end encrypted.
+
 ## Rollback
 
 Scale the machine to 0 (`fly scale count 0`) or destroy the app, remove the DNS record, and revoke the tokens. Hosting adds **no migration**; rollback never touches the database. With `ZEUSI_MCP_WRITE_SERVICE` unset the server is read-only. stdio MCP on local machines keeps working unchanged.

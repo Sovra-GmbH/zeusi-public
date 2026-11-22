@@ -45,7 +45,7 @@ Any [MCP](https://modelcontextprotocol.io) client can use it: Grok Bot, Claude, 
 >
 > Your workspace is not end-to-end encrypted.
 >
-> Details: [zeusi.ai/security](https://zeusi.ai/security). On your own server, workspace keys are off by default; the `ZEUSI_WORKSPACE_ENCRYPTION` setting turns them on with `enroll` or `on` ([`src/workspace-keys.ts`](src/workspace-keys.ts)).
+> Details: [zeusi.ai/security](https://zeusi.ai/security). On your own server, workspace keys are off by default; the `ZEUSI_WORKSPACE_ENCRYPTION` setting turns them on with `enroll` or `on` ([`docs/hosting.md`](docs/hosting.md#workspace-keys)).
 
 > [!IMPORTANT]
 > A Zeusi decision is context, not permission. Decisions and locks returned by Zeusi are cited context for the assistant; they are not an approval or a GO to act now. Anything that needs the owner's approval still needs the owner's current, explicit approval.
