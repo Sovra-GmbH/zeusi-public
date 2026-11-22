@@ -1,76 +1,243 @@
-# Zeusi
+<p align="center">
+  <a href="https://zeusi.ai">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="docs/assets/banner-dark.svg">
+      <source media="(prefers-color-scheme: light)" srcset="docs/assets/banner-light.svg">
+      <img alt="zeusi: sourced memory for your team and its AI assistants" src="docs/assets/banner-dark.svg" width="100%">
+    </picture>
+  </a>
+</p>
 
-Zeusi is a sourced memory for a team and its AI assistants. Standing rules, current focus, decisions, notes and work history live in Postgres with pgvector. Every row carries its source (`source_uri`, `source_ts`, a content hash and the ingest run that wrote it), so an assistant can cite where an answer came from and never has to invent one.
+<p align="center">
+  <b>Sourced memory for your team and its AI assistants.</b><br>
+  Every answer says where it came from.
+</p>
 
-Per-user workspace encryption is enabled by setting `ZEUSI_WORKSPACE_ENCRYPTION=on`; new personal workspaces are then encrypted from sign-up, and you hold the key. On the hosted service at [zeusi.ai](https://zeusi.ai): **Your memory is encrypted. Only you hold the key.** The workspace is not end-to-end encrypted: the server holds sealed data and unlocks it when you sign in.
+<p align="center">
+  <a href="https://github.com/Sovra-GmbH/zeusi-public/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/Sovra-GmbH/zeusi-public/ci.yml?branch=main&style=flat-square&label=ci"></a>
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-4f5d42?style=flat-square"></a>
+  <img alt="Node.js 22.18+" src="https://img.shields.io/badge/node-%E2%89%A522.18-10141d?style=flat-square&logo=node.js&logoColor=white">
+  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-strict-10141d?style=flat-square&logo=typescript&logoColor=white">
+  <img alt="Postgres + pgvector" src="https://img.shields.io/badge/Postgres-pgvector-10141d?style=flat-square&logo=postgresql&logoColor=white">
+  <a href="docs/mcp.md"><img alt="MCP server" src="https://img.shields.io/badge/MCP-server-e59c58?style=flat-square"></a>
+</p>
 
-What it gives you:
+<p align="center">
+  <a href="https://zeusi.ai">Website</a> ·
+  <a href="#quick-start">Quick start</a> ·
+  <a href="docs/mcp.md">MCP docs</a> ·
+  <a href="docs/wall.md">The wall</a> ·
+  <a href="SECURITY.md">Security</a>
+</p>
 
-- **A schema for sourced memory**: facts, decisions (with the exact words and who said them), episodes, notes and chunks, people, PRs and reviews, routine runs. Supersede functions instead of edits; views for the current state.
-- **A wall in the database.** A trigger on every content table runs the same verdict as the importers (`src/wall.ts` == `zeusi.wall_eval()`): hard rules for areas, P&L paths and lanes, and **protected names** (people or companies whose content must never be stored, in any spelling, look-alike or percent-encoding), plus soft content rules that quarantine by uri and hash only. Row-level security hides the `personal` scope from every reader. The example name `plankiva` in this repo is fictional. See [`docs/wall.md`](docs/wall.md).
-- **Per-user encryption** when `ZEUSI_WORKSPACE_ENCRYPTION=on`: new personal workspaces are encrypted from sign-up, and you hold the key.
-- **Least-privilege roles**, created by SQL with no passwords: an ingest login, a backup login, read-only logins for agents, a narrow decision-write login. See [`docs/roles.md`](docs/roles.md).
-- **A vault importer** for markdown notes (read-only on the vault, two wall gates, deletion guard, advisory lock), embeddings with a hard monthly spend cap, and hybrid search (vector + full text).
-- **An MCP connector** (`zeusi-mcp`) that any MCP client can use: `zeusi_startup`, `zeusi_search`, `zeusi_search_feedback`, `zeusi_context_for_task`, `zeusi_onboarding_status` and an opt-in `zeusi_log_decision`, with an output wall on every item. A canonical agent skill ships in [`skills/zeusi-startup`](skills/zeusi-startup/SKILL.md).
-
+---
 
 ## What Zeusi is
 
-Zeusi is a sourced memory for a team and its AI assistants. A Zeusi decision is context, not permission. Decisions and locks returned by Zeusi are cited context for the assistant; they are not an approval or a GO to act now. Anything that needs the owner's approval still needs the owner's current, explicit approval.
+Zeusi is a memory that your AI assistants share. It keeps your standing rules, current focus, decisions, notes and work history in Postgres with pgvector.
 
-## Quick start (local stdio MCP)
+Every row carries its source: `source_uri`, `source_ts`, a content hash and the ingest run that wrote it. So when an assistant answers from Zeusi, it can cite where the answer came from, and it never has to invent one.
 
-Requirements: Node.js 22.18+ and PostgreSQL 17+ with the `vector` extension (Neon works out of the box; any Postgres with pgvector works).
+Any [MCP](https://modelcontextprotocol.io) client can use it: Grok Bot, Claude, Cursor, ChatGPT, VS Code, Gemini CLI and more. Use the hosted server, or run your own.
 
-```sh
-npm ci && npm run build && npm test           # tests run on PGlite, no database needed
+> [!NOTE]
+> **Your memory is encrypted. Only you hold the key.** On the hosted service, new personal workspaces are encrypted from sign-up (self-hosted: set `ZEUSI_WORKSPACE_ENCRYPTION=on`). Your workspace is not end-to-end encrypted: the server unlocks it while you are signed in, to answer your assistant. Details on [zeusi.ai/security](https://zeusi.ai/security).
+
+> [!IMPORTANT]
+> A Zeusi decision is context, not permission. Decisions and locks returned by Zeusi are cited context for the assistant; they are not an approval or a GO to act now. Anything that needs the owner's approval still needs the owner's current, explicit approval.
+
+## Features
+
+- 🔗 **Every answer is sourced.** Facts, decisions, notes and chunks all keep `source_uri` and `source_ts`; startup rules also carry a ready-made `cite`. ([`migrations/0001_core.sql`](migrations/0001_core.sql))
+- 🧭 **A startup brief for your assistant.** `zeusi_startup` returns every current standing rule, the current focus and recent decisions in one call. ([`src/mcp-server.ts`](src/mcp-server.ts))
+- 🎯 **Context for the task at hand.** `zeusi_context_for_task` (alias `prime`) returns the decisions and locks that apply to a task, and flags conflicts between them. ([`src/context-for-task.ts`](src/context-for-task.ts))
+- 🔎 **Hybrid search.** Vector plus full-text search. Without an embeddings key it falls back to lexical search and says so. ([`src/search.ts`](src/search.ts))
+- 🗣️ **Decisions with the exact words.** Each decision keeps who said it and what they said. Changes go through supersede functions, not edits, with views for the current state. ([`src/decisions.ts`](src/decisions.ts))
+- 🧱 **A wall in the database.** A trigger on every content table runs the same verdict as the importers, including protected names in any spelling. Blocked items are quarantined by uri and hash only. ([`docs/wall.md`](docs/wall.md))
+- 🛡️ **Checked on the way out.** Every item an assistant gets passes an output wall and a secret check first. An item goes out whole or not at all. ([`src/mcp-wall.ts`](src/mcp-wall.ts))
+- 👀 **Preview first, always.** `zeusi onboard` reads markdown or Obsidian notes, decision logs, Claude and ChatGPT exports and git repos, shows what it would import, and never writes. ([`src/importers/onboard.ts`](src/importers/onboard.ts))
+- 🔐 **Sign in with GitHub.** The hosted server uses OAuth 2.1 with PKCE. Each GitHub account gets its own personal workspace. Sign-in tokens get the read tools; writing into your own workspace needs a separate yes on the consent screen. ([`docs/hosting.md`](docs/hosting.md))
+- 🧑‍⚖️ **Least-privilege roles.** SQL creates the logins with no passwords: ingest, backup, read-only for agents and a narrow decision writer. ([`docs/roles.md`](docs/roles.md))
+- 💸 **A hard spend cap on embeddings.** Embedding runs stop at a monthly cap and reuse vectors for unchanged text. ([`docs/embeddings.md`](docs/embeddings.md))
+
+## How it works
+
+```mermaid
+flowchart LR
+    A["Your notes and exports<br/>markdown · decision logs<br/>Claude · ChatGPT · git"] --> B["zeusi onboard<br/>preview, writes nothing"]
+    B --> C["zeusi import --real"]
+    C --> W{"Wall and<br/>secret check"}
+    W -- admitted --> D[("Postgres + pgvector<br/>every row sourced")]
+    W -- blocked --> Q["Quarantine<br/>uri + hash only"]
+    D --> M["zeusi-mcp<br/>stdio or hosted"]
+    M --> O{"Output wall"}
+    O --> E["Your assistant<br/>Grok Bot · Claude · Cursor · ..."]
 ```
 
-1. **Database and owner URL.** Create a database. Put the owner connection strings in `.env.local` (gitignored; names in `.env.example`): a pooled `DATABASE_URL` and a direct `DATABASE_URL_UNPOOLED`.
-2. **Migrate** as the owner: `npm start -- migrate --dry-run`, then `npm start -- migrate`. On a database that already has migrations, take a snapshot first and pass `--i-took-a-snapshot`.
-3. **Role passwords.** The migrations create the login roles without passwords. Set them as the owner (`\password zeusi_box_ro`, ...) and store each one in your password manager, then on the machine that uses it in the macOS Keychain (`zeusi-neon-<role>`) or `~/.pgpass` (0600). See [`docs/roles.md`](docs/roles.md).
-4. **Service file.** Copy `config/pg_service.example.conf` to `~/.pg_service.conf`, fill in hosts and database name, `chmod 600`. Check with `npm start -- doctor` and `npm start -- doctor --roles`.
-5. **Sources and protected names.** Copy `config/sources.example.toml` to `config/sources.toml` (gitignored) and point it at your vault. Put the people or companies that must stay out under `[wall] protected_names`, then apply their hard rules as the owner: `node dist/cli.js wall seed-sql | psql "<owner URL>"`. Never commit the names. The example name `plankiva` is already seeded.
-6. **Ingest and embed.** `npm start -- ingest vault --dry-run` (counts only, no database), then `--real`. Embeddings need an OpenAI key in the macOS Keychain item `zeusi-openai-api-key`: `npm start -- embed --estimate`, `embed --dry-run`, then `embed --real` ([`docs/embeddings.md`](docs/embeddings.md)).
-7. **Connect an assistant** over stdio:
+Your assistant calls `zeusi_startup` at the start of a session, `zeusi_context_for_task` at the start of a task, and `zeusi_search` before it answers or asks you. Every item it gets back names its source.
 
+## Quick start
+
+### Option 1: Use the hosted server
+
+Point your MCP client at **`https://mcp.zeusi.dev/mcp`** (Streamable HTTP) and sign in with GitHub. A new account gets its own personal workspace, empty at first.
+
+<details open>
+<summary><b>Grok Bot</b></summary>
+
+Add Zeusi as an MCP connector with the URL `https://mcp.zeusi.dev/mcp`. Sign in with GitHub when asked and approve the Zeusi consent screen (or send a read token as `Authorization: Bearer <token>`). Then copy [`skills/zeusi-startup/`](skills/zeusi-startup/SKILL.md) as-is into your skills.
+
+</details>
+
+<details>
+<summary><b>Claude Code</b></summary>
+
+```sh
+claude mcp add --transport http zeusi https://mcp.zeusi.dev/mcp
+```
+
+Then run `/mcp` in a Claude Code session and choose to authenticate `zeusi`.
+
+</details>
+
+<details>
+<summary><b>claude.ai / Claude Desktop</b></summary>
+
+**Customize > Connectors**, then **+ Add** > **Add custom connector**. Name it `Zeusi`, enter `https://mcp.zeusi.dev/mcp`, and sign in.
+
+</details>
+
+<details>
+<summary><b>Cursor</b></summary>
+
+Add this to `~/.cursor/mcp.json` (all projects) or `.cursor/mcp.json` (one project), then follow the sign-in prompt under **Customize > MCPs**:
+
+```json
+{
+  "mcpServers": {
+    "zeusi": { "url": "https://mcp.zeusi.dev/mcp" }
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><b>ChatGPT, VS Code, Gemini CLI and others</b></summary>
+
+See [`docs/mcp.md`](docs/mcp.md#startup-snippets) for the steps for each client.
+
+</details>
+
+**Fill your memory.** If your workspace has write access, ask your assistant to fill your memory. It shows a preview first (`zeusi_import_preview`) and saves nothing until you say yes (`zeusi_import_commit`).
+
+### Option 2: Run your own
+
+Requirements: **Node.js 22.18+** and **PostgreSQL 17+** with the `vector` extension (Neon works out of the box; any Postgres with pgvector works).
+
+```sh
+git clone https://github.com/Sovra-GmbH/zeusi-public.git zeusi && cd zeusi
+npm ci && npm run build && npm test     # tests run on PGlite, no database needed
+```
+
+`npm start -- <command>` runs the CLI (the same as `node dist/cli.js <command>`). Then:
+
+1. **Connect a database.** Put the owner connection strings in `.env.local` (gitignored; names in [`.env.example`](.env.example)).
+2. **Migrate, dry run first.**
+   ```sh
+   npm start -- migrate --dry-run
+   npm start -- migrate
+   ```
+3. **Set role passwords and the service file.** The migrations create login roles without passwords. Set them as the owner, then copy [`config/pg_service.example.conf`](config/pg_service.example.conf) to `~/.pg_service.conf`. Check with `npm start -- doctor`. See [`docs/roles.md`](docs/roles.md).
+4. **Preview your import.** `onboard` is always a dry run: no database connection, nothing written. It prints the counts and the exact command to run next.
+   ```sh
+   npm start -- onboard --markdown ~/notes --scope work
+   ```
+5. **Import and embed.** Run the `zeusi import ... --real` command that `onboard` printed. Then embed, estimate first:
+   ```sh
+   npm start -- embed --estimate
+   npm start -- embed --dry-run
+   npm start -- embed --real
+   ```
+6. **Connect an assistant over stdio.**
    ```json
    { "mcpServers": { "zeusi": { "command": "node", "args": ["/path/to/zeusi/dist/mcp.js"] } } }
    ```
+   or `claude mcp add zeusi -- node /path/to/zeusi/dist/mcp.js`.
 
-   or `claude mcp add zeusi -- node /path/to/zeusi/dist/mcp.js`. Install the skill from `skills/zeusi-startup/`. Details and client snippets: [`docs/mcp.md`](docs/mcp.md).
+**Optional: a markdown vault and protected names.** Copy [`config/sources.example.toml`](config/sources.example.toml) to `config/sources.toml` (gitignored), point it at your vault and list the people or companies that must stay out under `[wall] protected_names`. Apply their rules as the owner with `node dist/cli.js wall seed-sql`, then run `npm start -- ingest vault --dry-run` before `--real`. Never commit the names. See [`docs/wall.md`](docs/wall.md).
 
-Credentials stay on the machine that runs the server (`~/.pg_service.conf` plus Keychain or `~/.pgpass`); they never go into a client config, a skill, a prompt or this repo.
+To run your own hosted server, use `node dist/mcp.js --hosted`. It fails closed until a valid tokens file exists. See [`docs/hosting.md`](docs/hosting.md).
 
-## Hosted mode
+> [!TIP]
+> Credentials stay on the machine that runs the server (`~/.pg_service.conf` plus the macOS Keychain or `~/.pgpass`). They never go into a client config, a skill, a prompt or this repo.
 
-The official hosted server is `https://mcp.zeusi.dev/mcp`. To run your own, use `node dist/mcp.js --hosted`. Each assistant gets its own bearer token (`zeusi mcp-token mint|list|revoke`). The server fails closed (HTTP 503 until a valid tokens file exists). See [`docs/hosting.md`](docs/hosting.md). Client snippets are in [`docs/mcp.md`](docs/mcp.md) under "Startup snippets".
+## MCP tools
 
-## Site
+| Tool | What it does |
+|---|---|
+| `zeusi_startup` | Standing rules, current focus and recent decisions for the start of a session. |
+| `zeusi_context_for_task` | The decisions, locks and parked items that apply to a task, with conflicts. |
+| `zeusi_search` | Hybrid search over chunks and decisions; every hit cites its source. |
+| `zeusi_search_feedback` | Say whether a search or context result answered the question. |
+| `zeusi_onboarding_status` | Is Zeusi empty for this connection? Counts only, and what to run next. |
+| `zeusi_log_decision` | Opt-in: record a decision with who said it and the exact words. |
+| `zeusi_import_preview` / `zeusi_import_commit` / `zeusi_sync_batch` | Personal workspaces with write access: fill your memory, preview first. |
 
-The public site is live at https://zeusi.ai. It is deployed as static files from `site/`. See [`site/README.md`](site/README.md).
+Short aliases: `startup`, `search`, `log_decision`, `context_for_task` / `prime`. Full reference: [`docs/mcp.md`](docs/mcp.md).
 
 ## Commands
 
-`npm start -- <command>` (or `node dist/cli.js <command>`); `--help` lists every option.
+`npm start -- <command>` (or `node dist/cli.js <command>`). `--help` lists every command and option.
 
-| Command | Connects as | What it does |
-|---|---|---|
-| `doctor [--service s]`, `doctor --roles`, `doctor --offline` | role / none | TLS, channel binding, server major, pgvector, migrations; role catalog checks. No hosts or credentials printed. |
-| `ingest vault (--dry-run \| --real) [--config f]` | none / `zeusi_ingest` | Import the configured vault notes through both wall gates. Dry run prints counts only. |
-| `embed (--estimate \| --dry-run \| --real)` | none / `zeusi_ingest` | Offline cost estimate, or embed pending chunks under a hard monthly cap. |
-| `search "<q>" [--limit n] [--scope s] [--hybrid] [--json]` | `zeusi_box_ro`, read-only | Semantic (with the key) or lexical search; every hit cites `source_uri` and `source_ts`. |
-| `wall report`, `wall audit` | role | Quarantined items (no content); rows that break the live wall (exit 1 if any). |
-| `wall seed-sql [--config f]` | none | Owner SQL for the protected names in the private config. |
-| `migrate [--dry-run] [--i-took-a-snapshot]` | **owner**, direct | Apply `migrations/NNNN_*.sql` in order, one transaction each. Refuses edited files. |
-| `mcp-token mint\|list\|revoke` | none | Offline token admin for the hosted MCP server. |
+| Command | What it does |
+|---|---|
+| `doctor`, `doctor --roles`, `doctor --offline` | TLS, channel binding, server version, pgvector, migrations and role checks. Prints no hosts or credentials. |
+| `migrate [--dry-run]` | Apply `migrations/NNNN_*.sql` in order, one transaction each. Refuses edited files. |
+| `onboard <inputs> --scope <s>` | First run. Always a dry run: prints the preview and the import command to run next. |
+| `import <inputs> --scope <s> [--real]` | Import markdown, decision logs, Claude or ChatGPT exports and git repos through the wall. |
+| `ingest vault (--dry-run \| --real)` | Import the configured vault notes through both wall gates. |
+| `embed (--estimate \| --dry-run \| --real)` | Cost estimate, or embed pending chunks under a hard monthly cap. |
+| `search "<q>" [--hybrid] [--json]` | Search as a read-only role; every hit cites `source_uri` and `source_ts`. |
+| `wall report`, `wall audit`, `wall seed-sql` | Quarantined items (no content), rows that break the wall, owner SQL for protected names. |
+| `mcp-token mint\|list\|revoke` | Offline token admin for the hosted MCP server. |
+
+## Site
+
+The public site is live at [https://zeusi.ai](https://zeusi.ai). It is deployed as static files from `site/`. See [`site/README.md`](site/README.md).
+
+## Project layout
+
+```text
+src/            CLI, MCP server, importers, wall, search, encryption and OAuth
+migrations/     Postgres schema, roles, row-level security and the wall, in order
+skills/         The zeusi-startup agent skill (copy as-is into any client)
+docs/           MCP, hosting, roles, wall, embeddings and more
+site/           The static site served at zeusi.ai
+scripts/        check, repo guards, git hooks and dev tools
+test/           Hermetic tests on PGlite: no network, no database
+config/         Example service file and sources config
+```
 
 ## Development
 
-- `npm run typecheck`, `npm run build`, `npm test` (Node's test runner on PGlite; no network, no database).
-- `npm run hooks:install` adds a pre-commit hook that runs gitleaks; `npm run secret-scan` scans the history.
-- `npm run check` runs typecheck, build, tests, a gitleaks history scan and the repo guards.
+```sh
+npm ci
+npm run check      # typecheck, build, tests, gitleaks history scan and repo guards
+```
+
+`npm run check` is exactly what CI runs on every pull request. `npm run hooks:install` adds a pre-commit hook that runs gitleaks. The rules for changing this repo live in [`AGENTS.md`](AGENTS.md).
+
+## Contributing
+
+Contributions are welcome. Read [`CONTRIBUTING.md`](CONTRIBUTING.md) and our [Code of Conduct](CODE_OF_CONDUCT.md) first.
+
+## Security
+
+Please do not open a public issue for a security problem. Write to [hello@sovra.ch](mailto:hello@sovra.ch). See [`SECURITY.md`](SECURITY.md).
 
 ## License
 
-MIT. Copyright (c) 2026 Sovra GmbH.
+[MIT](LICENSE). Copyright (c) 2026 Sovra GmbH.
+
+<p align="center"><sub>Made by <a href="https://zeusi.ai">Sovra GmbH</a> in Cham, Switzerland.</sub></p>

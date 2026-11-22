@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Report a security problem
+    url: https://github.com/Sovra-GmbH/zeusi-public/blob/main/SECURITY.md
+    about: Please do not open a public issue. Follow SECURITY.md and write to hello@sovra.ch.
+  - name: Zeusi website
+    url: https://zeusi.ai
+    about: What Zeusi is and how to connect your assistant.
