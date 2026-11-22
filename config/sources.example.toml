@@ -123,4 +123,5 @@ repos = [
   "product-agents",
   "docs-site",
 ]
-product_repos = ["product-connector", "product-agents"]
+# Only checked to be a subset of `repos` (src/sources.ts validateSources); nothing else reads it.
+northbank_repos = ["product-connector", "product-agents"]
