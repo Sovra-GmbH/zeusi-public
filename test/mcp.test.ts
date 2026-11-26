@@ -16,7 +16,7 @@ import { search as realSearch, type SearchOptions } from '../src/search.ts';
 import { TRANSPORT_ENV, type ServerlessClientLike } from '../src/transport.ts';
 import {
   createZeusiMcpServer, createMcpState, MCP_INSTRUCTIONS, TOOL_NAMES, TOOL_ALIASES, ALL_TOOL_NAMES, WRITE_ROLE, WRITE_ROLES,
-  TRANSITIONAL_WRITE_ROLE, DEFAULT_DECISION_DAYS,
+  TRANSITIONAL_WRITE_ROLE, DEFAULT_DECISION_DAYS, WORKSPACE_WRITE_TOOL_NAMES,
   type McpDeps,
 } from '../src/mcp-server.ts';
 import { parseMcpArgs, McpArgsError } from '../src/mcp.ts';
@@ -168,6 +168,59 @@ test('mcp: lists the zeusi_* tools plus the aliases startup/search/log_decision/
   } finally {
     await h.close();
   }
+});
+
+// The four MCP tool annotations, pinned for every tool the server can list. A directory (OpenAI's) refuses a tool
+// that omits one, and MCP reads an omitted destructiveHint or openWorldHint as true. The values follow the handlers:
+// zeusi_search may send the query to the OpenAI embeddings API, and each such call is billed and counted in the
+// local spend ledger (open world, not idempotent); zeusi_search_feedback appends a ledger line per call;
+// zeusi_import_preview keeps a new preview per call; zeusi_sync_batch marks the listed notes deleted.
+const HINTS = ['readOnlyHint', 'destructiveHint', 'idempotentHint', 'openWorldHint'] as const;
+const TOOL_HINTS: Record<string, Record<(typeof HINTS)[number], boolean>> = {
+  zeusi_startup: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  zeusi_search: { readOnlyHint: true, destructiveHint: false, idempotentHint: false, openWorldHint: true },
+  zeusi_log_decision: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+  zeusi_context_for_task: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  zeusi_onboarding_status: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  zeusi_search_feedback: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+  zeusi_import_preview: { readOnlyHint: true, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+  zeusi_import_commit: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  zeusi_sync_batch: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
+};
+
+test('mcp annotations: in every registration mode each listed tool (all 9 zeusi_* tools and every alias) declares all four hints as booleans, with the pinned values; an alias has its target\'s', async () => {
+  const tenantRead = async (): Promise<Db> => { throw new Error('tools/list opens no workspace'); };
+  const modes: Array<[string, Partial<McpDeps>]> = [
+    ['read-only connector (no write service)', {}],
+    ['read class with a write service', { toolClass: 'read', writeService: 'zeusi_decision' }],
+    ['write service (zeusi_log_decision)', { writeService: 'zeusi_decision' }],
+    ['personal workspace, read grant', { workspace: 'personal', tenantRead }],
+    ['personal workspace, write grant (import / sync)', {
+      workspace: 'personal', tenantRead,
+      workspaceWrite: { caller: { tenantId: 'tannotations', grantId: 'gannotations', subject: null, requestId: null }, writes: null },
+    }],
+  ];
+  const listed = new Set<string>();
+  for (const [mode, over] of modes) {
+    const h = await connect(over);
+    try {
+      const { tools } = await h.client.listTools();
+      const by = new Map(tools.map((t) => [t.name, t]));
+      for (const t of tools) {
+        const a = (t.annotations ?? {}) as Record<string, unknown>;
+        for (const k of HINTS) assert.equal(typeof a[k], 'boolean', `${mode}: ${t.name} ${k}`);
+        const target: string = (TOOL_ALIASES as Record<string, string>)[t.name] ?? t.name;
+        assert.deepEqual(t.annotations, TOOL_HINTS[target], `${mode}: ${t.name}`);
+        if (target !== t.name) assert.deepEqual(t.annotations, by.get(target)!.annotations, `${mode}: alias ${t.name} of ${target}`);
+        listed.add(t.name);
+      }
+    } finally {
+      await h.close();
+    }
+  }
+  // Every zeusi_* tool and every alias was listed, and so checked, in at least one mode.
+  assert.deepEqual([...listed].sort(), [...ALL_TOOL_NAMES, ...WORKSPACE_WRITE_TOOL_NAMES].sort());
+  assert.deepEqual(Object.keys(TOOL_HINTS).sort(), [...TOOL_NAMES, ...WORKSPACE_WRITE_TOOL_NAMES].sort());
 });
 
 test('mcp aliases: startup / search / log_decision run the same handlers, gates and walls as the zeusi_* tools', async () => {

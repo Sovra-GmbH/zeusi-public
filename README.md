@@ -22,6 +22,12 @@
   <a href="docs/mcp.md"><img alt="MCP server" src="https://img.shields.io/badge/MCP-server-e59c58?style=flat-square"></a>
 </p>
 
+<div align="center">
+
+[![M8ven Score](https://m8ven.ai/badge/mcp/sovra-gmbh-zeusi-public-mh2qsx?v=f05e59a198a6e9f49804bc71835995d4)](https://m8ven.ai/mcp/sovra-gmbh-zeusi-public-mh2qsx?s=readme)
+
+</div>
+
 <p align="center">
   <a href="https://zeusi.ai">Website</a> ·
   <a href="#quick-start">Quick start</a> ·
