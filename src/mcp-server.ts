@@ -466,7 +466,7 @@ export function createZeusiMcpServer(deps: McpDeps, state: McpState = createMcpS
     title: 'Zeusi startup',
     description: `Call once at session start. Returns EVERY current standing rule (recorded rules, and the CURRENT locks of the standing ops/meta notes or of notes that mark them standing_locks; superseded / expired locks are not rules): the top-ranked in compact one-line form in rules (within a token budget), every other one listed in rules_remainder with id, subject and cite (look it up with zeusi_context_for_task; it binds like a served rule), rules_total the full count; current focus, newest per subject (or a plain message saying why none is recorded) and the owner's decisions from the last N days (default ${defaultDays}, max ${MAX_DECISION_DAYS}), each with source_uri and source_ts. Read-only.`,
     inputSchema: strict({ days: z.number().int().min(1).max(MAX_DECISION_DAYS).optional() }),
-    annotations: { readOnlyHint: true, openWorldHint: false },
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
   }, async (args) => {
     try {
       const days = args.days ?? defaultDays;
@@ -585,7 +585,10 @@ export function createZeusiMcpServer(deps: McpDeps, state: McpState = createMcpS
       scope: z.enum(SEARCH_SCOPES).optional(),
       hybrid: z.boolean().optional(),
     }),
-    annotations: { readOnlyHint: true, openWorldHint: false },
+    // Open world: with an embeddings key (and not on the sealed route) the query goes to the OpenAI embeddings API
+    // (src/embeddings.ts). Not idempotent: each such call is billed and counted in the local spend ledger
+    // (src/search.ts QueryLedger), whose caps turn a later identical call lexical-only.
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: false, openWorldHint: true },
   }, async (args) => {
     try {
       const route = await readRoute();
@@ -704,7 +707,7 @@ export function createZeusiMcpServer(deps: McpDeps, state: McpState = createMcpS
       scope: z.enum(SEARCH_SCOPES).optional(),
       limit: z.number().int().min(1).max(MAX_CONTEXT_LIMIT).optional(),
     }),
-    annotations: { readOnlyHint: true, openWorldHint: false },
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
   }, async (args) => {
     try {
       const limit = args.limit ?? DEFAULT_CONTEXT_LIMIT;
@@ -783,7 +786,7 @@ export function createZeusiMcpServer(deps: McpDeps, state: McpState = createMcpS
     title: 'Zeusi onboarding status',
     description: 'First run: is Zeusi empty for this connection? Returns counts only (current facts, rules, focus, active notes, note lock items, chunks, current decisions; each capped), never row text, optionally for one scope. When empty, it lists the zeusi CLI commands the user runs locally (dry run first); the connector cannot run the import. Read-only.',
     inputSchema: strict({ scope: z.enum(SEARCH_SCOPES).optional() }),
-    annotations: { readOnlyHint: true, openWorldHint: false },
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
   }, async (args) => {
     try {
       const route = await readRoute();
@@ -824,7 +827,8 @@ export function createZeusiMcpServer(deps: McpDeps, state: McpState = createMcpS
       useful: z.boolean(),
       reason: z.string().trim().max(FEEDBACK_REASON_MAX).optional(),
     }),
-    annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
+    // Not idempotent: every call appends one more line to the local ledger (src/feedback.ts appendLine).
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
   }, async (args) => {
     try {
       const memo = state.queries.get(args.query_id);
